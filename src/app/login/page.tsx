@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const Page = () => {
   const { data: session, status } = useSession();
@@ -28,6 +28,9 @@ const Page = () => {
   return (
     <div>
       <p>Logged in as {session.user?.email}</p>
+      <button onClick={()=>signOut()}>
+        logout
+      </button>
     </div>
   );
 };
