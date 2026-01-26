@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prisma";
+import  prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import NotesClient from "./NotesClient";
 import EditNote from "./EditNotes";
@@ -8,7 +8,7 @@ import EditNote from "./EditNotes";
 export default async function NotesPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: Promise<{ q?: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -16,7 +16,8 @@ export default async function NotesPage({
     redirect("/login");
   }
 
-  const query = searchParams.q || "";
+  const { q } = await searchParams;
+  const query = q ?? "";
 
   const notes = await prisma.note.findMany({
     where: {
@@ -26,9 +27,7 @@ export default async function NotesPage({
         { content: { contains: query, mode: "insensitive" } },
       ],
     },
-    orderBy: {
-      updatedAt: "desc",
-    },
+    orderBy: { updatedAt: "desc" },
   });
 
   return (
@@ -38,22 +37,17 @@ export default async function NotesPage({
       <NotesClient />
 
       <form>
-        <input name="q" placeholder="Search notes..." defaultValue={query} />
+        <input
+          name="q"
+          placeholder="Search notes..."
+          defaultValue={query}
+        />
       </form>
 
       <hr />
 
-      {notes.length === 0 && <p>No notes found</p>}
-
       {notes.map((note) => (
         <EditNote key={note.id} note={note} />
-      ))}
-
-      {notes.map((note) => (
-        <div key={note.id}>
-          <h3>{note.title}</h3>
-          <p>{note.content}</p>
-        </div>
       ))}
     </div>
   );
