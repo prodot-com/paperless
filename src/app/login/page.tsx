@@ -30,7 +30,7 @@ const Page = () => {
     <div>
       <p>Logged in as {session.user?.email}</p>
       <br />
-      <button onClick={()=>redirect("/notes")}>Go to notes</button>
+      <button onClick={()=>redirect("/dashboard")}>Go to notes</button>
       <br />
       <button onClick={()=>signOut()}>
         logout
