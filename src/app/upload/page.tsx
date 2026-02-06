@@ -107,6 +107,37 @@ export default function UploadPage() {
   View
 </button>
 
+<button
+  onClick={async () => {
+    const newName = prompt("Rename file", f.name);
+    if (!newName || newName === f.name) return;
+
+    await fetch(`/api/upload/${f.id}/rename`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+    });
+
+    setFiles((prev) =>
+      prev.map((x) => (x.id === f.id ? { ...x, name: newName } : x))
+    );
+  }}
+>
+  Rename
+</button>
+
+
+<button
+  onClick={async () => {
+    const res = await fetch(`/api/upload/${f.id}/download`);
+    const { url } = await res.json();
+    window.open(url, "_blank");
+  }}
+>
+  Download
+</button>
+
+
 
     <span>({Math.round(f.size / 1024)} KB)</span>
 
