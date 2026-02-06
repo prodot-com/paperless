@@ -155,6 +155,27 @@ export default function UploadPage() {
     >
       Delete
     </button>
+
+    <button
+  onClick={async () => {
+    const res = await fetch("/api/share/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "file",          // ✅ file, not note
+        resourceId: f.id,      // ✅ f.id, not note.id
+        expiresInHours: 24,
+      }),
+    });
+
+    const { url } = await res.json();
+    await navigator.clipboard.writeText(url);
+    alert("Share link copied!");
+  }}
+>
+  Share
+</button>
+
   </div>
 ))}
 
