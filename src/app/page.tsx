@@ -47,7 +47,7 @@ const Landing = () => {
             Now in Private Beta
           </div>
 
-          <h1 className="text-6xl md:text-8xl font-light tracking-tight leading-[1.1] text-neutral-900">
+          <h1 className="border-dashed border-2 py-1.5 px-5  text-6xl md:text-8xl font-light tracking-tight leading-[1.1] text-neutral-900 bg-gray-400/22 backdrop-blur-[4px]">
             Thoughts, filed <br />
             <span className="font-serif italic text-neutral-400">effortlessly.</span>
           </h1>
@@ -59,7 +59,10 @@ const Landing = () => {
 
           <div className="mt-12 group relative">
             <button 
-              onClick={() => router.push("/auth")}
+              // onClick={() => router.push("/auth")}
+              onClick={()=>{
+                document.documentElement.classList.add("dark")
+              }}
               className="relative z-10 bg-white border border-neutral-200 px-8 py-4 rounded-xl text-lg font-medium hover:border-neutral-900 transition-all duration-500 flex items-center gap-3 shadow-xl shadow-neutral-100"
             >
               Get Started
@@ -122,11 +125,11 @@ const Landing = () => {
         © 2026 Notes Buddy. All rights reserved.
       </p>
 
-      <div className="pointer-events-none select-none mt-12 text-center">
-        <h1 className="text-[10rem] md:text-[14rem] font-extrabold text-gray-200 leading-none">
-          paperless
+      <div className="pointer-events-none select-none mt-5 text-center">
+        <h1 className="text-[10rem] md:text-[14rem] font-extrabold text-gray-200 leading-none mb-1">
+          paperless<span className="text-indigo-600 font-normal">.</span>
         </h1>
-        <div className="absolute bottom-0 w-full bg-linear-to-t from-green-500 via-green-200 to-transparent h-5"></div>
+        <div className="absolute bottom-0 w-full bg-linear-to-t from-gray-500 via-gray-200 to-transparent h-5"></div>
       </div>
 
       {/* <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-sm text-gray-500">
@@ -145,52 +148,3 @@ const Landing = () => {
 };
 
 export default Landing;
-
-
-// export default function Footer() {
-//   return (
-//     <footer className="relative w-full bg-white overflow-hidden">
-//       {/* Top links */}
-//       <div className="flex flex-wrap justify-center gap-3 pt-8">
-//         {[
-//           "Contact Us",
-//           "Shipping & Delivery",
-//           "Privacy Policy",
-//           "Cancellation & Refund Policy",
-//           "Terms of Conditions",
-//         ].map((item) => (
-//           <button
-//             key={item}
-//             className="rounded-full bg-gray-100 px-5 py-2 text-sm text-gray-700 hover:bg-gray-200 transition"
-//           >
-//             {item}
-//           </button>
-//         ))}
-//       </div>
-
-//       {/* Copyright */}
-//       <p className="mt-6 text-center text-sm text-gray-500">
-//         © 2026 Notes Buddy. All rights reserved.
-//       </p>
-
-//       {/* Watermark brand */}
-//       <div className="pointer-events-none select-none mt-12 text-center">
-//         <h1 className="text-[10rem] md:text-[14rem] font-extrabold text-gray-200 leading-none">
-//           Notes Buddy
-//         </h1>
-//       </div>
-
-//       {/* Bottom credit */}
-//       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-sm text-gray-500">
-//         <img
-//           src="/avatar.png" // replace with your image
-//           alt="avatar"
-//           className="w-7 h-7 rounded-full border"
-//         />
-//         <span>
-//           Built with <span className="text-pink-500">❤️</span> Ram
-//         </span>
-//       </div>
-//     </footer>
-//   );
-// }
