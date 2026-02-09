@@ -99,16 +99,98 @@ const Landing = () => {
         </div>
       </main>
 
-      <footer className="px-8 py-20 border-t border-neutral-100 text-neutral-400 text-sm flex flex-col md:flex-row justify-between items-center gap-6">
-        <div className="flex items-center gap-6">
-          <a href="#" className="hover:text-neutral-900 transition-colors">Privacy</a>
-          <a href="#" className="hover:text-neutral-900 transition-colors">Security</a>
-          <a href="#" className="hover:text-neutral-900 transition-colors">Changelog</a>
-        </div>
-        <p className="font-light tracking-wide italic">designed for the organized mind.</p>
-      </footer>
+    <footer className="relative w-full bg-white overflow-hidden">
+      {/* Top links */}
+      <div className="flex flex-wrap justify-center gap-3 pt-8">
+        {[
+          "Contact Us",
+          "Shipping & Delivery",
+          "Privacy Policy",
+          "Cancellation & Refund Policy",
+          "Terms of Conditions",
+        ].map((item) => (
+          <button
+            key={item}
+            className="rounded-full bg-gray-100 px-5 py-2 text-sm text-gray-700 hover:bg-gray-200 transition"
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      <p className="mt-6 text-center text-sm text-gray-500">
+        © 2026 Notes Buddy. All rights reserved.
+      </p>
+
+      <div className="pointer-events-none select-none mt-12 text-center">
+        <h1 className="text-[10rem] md:text-[14rem] font-extrabold text-gray-200 leading-none">
+          paperless
+        </h1>
+        <div className="absolute bottom-0 w-full bg-linear-to-t from-green-500 to-white h-20"></div>
+      </div>
+
+      {/* <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-sm text-gray-500">
+        <img
+          src="/avatar.png" // replace with your image
+          alt="avatar"
+          className="w-7 h-7 rounded-full border"
+        />
+        <span>
+          Built with <span className="text-pink-500">❤️</span> Ram
+        </span>
+      </div> */}
+    </footer>
     </div>
   );
 };
 
 export default Landing;
+
+
+// export default function Footer() {
+//   return (
+//     <footer className="relative w-full bg-white overflow-hidden">
+//       {/* Top links */}
+//       <div className="flex flex-wrap justify-center gap-3 pt-8">
+//         {[
+//           "Contact Us",
+//           "Shipping & Delivery",
+//           "Privacy Policy",
+//           "Cancellation & Refund Policy",
+//           "Terms of Conditions",
+//         ].map((item) => (
+//           <button
+//             key={item}
+//             className="rounded-full bg-gray-100 px-5 py-2 text-sm text-gray-700 hover:bg-gray-200 transition"
+//           >
+//             {item}
+//           </button>
+//         ))}
+//       </div>
+
+//       {/* Copyright */}
+//       <p className="mt-6 text-center text-sm text-gray-500">
+//         © 2026 Notes Buddy. All rights reserved.
+//       </p>
+
+//       {/* Watermark brand */}
+//       <div className="pointer-events-none select-none mt-12 text-center">
+//         <h1 className="text-[10rem] md:text-[14rem] font-extrabold text-gray-200 leading-none">
+//           Notes Buddy
+//         </h1>
+//       </div>
+
+//       {/* Bottom credit */}
+//       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-sm text-gray-500">
+//         <img
+//           src="/avatar.png" // replace with your image
+//           alt="avatar"
+//           className="w-7 h-7 rounded-full border"
+//         />
+//         <span>
+//           Built with <span className="text-pink-500">❤️</span> Ram
+//         </span>
+//       </div>
+//     </footer>
+//   );
+// }
