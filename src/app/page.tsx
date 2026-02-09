@@ -126,7 +126,7 @@ const Landing = () => {
         <h1 className="text-[10rem] md:text-[14rem] font-extrabold text-gray-200 leading-none">
           paperless
         </h1>
-        <div className="absolute bottom-0 w-full bg-linear-to-t from-green-300 via- to-transparent h-5"></div>
+        <div className="absolute bottom-0 w-full bg-linear-to-t from-green-500 via-green-200 to-transparent h-5"></div>
       </div>
 
       {/* <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-sm text-gray-500">
