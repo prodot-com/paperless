@@ -7,6 +7,14 @@ import Note from "@/lib/logo";
 const Landing = () => {
   const router = useRouter();
 
+  const toggleTheme = () => {
+  const html = document.documentElement;
+  html.classList.contains("dark")
+    ? html.classList.remove("dark")
+    : html.classList.add("dark");
+  };
+
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0a0a] text-[#1A1A1A] dark:text-neutral-100 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 overflow-x-hidden transition-colors duration-300">
       
@@ -61,10 +69,7 @@ const Landing = () => {
 
           <div className="mt-8 md:mt-12 group relative w-full md:w-auto flex justify-center">
             <button 
-              onClick={()=>{
-                // Logic to toggle class on <html>
-                document.documentElement.classList.toggle("dark")
-              }}
+              onClick={toggleTheme}
               className="relative z-10 w-full md:w-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-8 py-4 rounded-xl text-base md:text-lg font-medium hover:border-neutral-900 dark:hover:border-white transition-all duration-500 flex items-center justify-center gap-3 shadow-xl shadow-neutral-100 dark:shadow-none"
             >
               Get Started
