@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import Note from "@/lib/logo";
 import { Sun,Moon, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 const Landing = () => {
   const [loginModal, setLoginModal] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const toggleTheme = () => {
   const html = document.documentElement;
@@ -17,6 +18,14 @@ const Landing = () => {
     ? html.classList.remove("dark")
     : html.classList.add("dark");
   };
+
+   const manageSignin = ()=>{
+    if(session){
+      router.push('/dashboard')
+    }else{
+      setLoginModal(true)
+    }
+  }
 
 
   return (
@@ -44,7 +53,7 @@ const Landing = () => {
             <Sun/>
           </div>
           <button 
-            onClick={() => setLoginModal(true)}
+            onClick={() => manageSignin()}
             className="bg-[#1A1A1A] dark:bg-white text-white dark:text-black px-4 md:px-5 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-medium hover:bg-blue-600 dark:hover:bg-blue-500 transition-all shadow-sm"
           >
             Sign in
@@ -69,7 +78,7 @@ const Landing = () => {
           <div className="mt-8 md:mt-12 group relative w-full md:w-auto flex justify-center">
             <button 
               className="relative z-10 w-full md:w-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-8 py-4 rounded-xl text-base md:text-lg font-medium hover:border-neutral-900 dark:hover:border-white transition-all duration-500 flex items-center justify-center gap-3 shadow-xl shadow-neutral-100 dark:shadow-none"
-              onClick={()=>setLoginModal(true)}
+              onClick={()=>manageSignin()}
             >
               Get Started
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -138,7 +147,10 @@ const Landing = () => {
                 </p>
 
                 <button
-                  onClick={() => signIn("google")}
+                  onClick={() =>
+    signIn("google", {
+      callbackUrl: "/dashboard",
+    })}
                   className="w-full flex items-center justify-center gap-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 py-3.5 px-4 rounded-xl font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all shadow-sm group"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24">
