@@ -7,21 +7,12 @@ const Workspace = ({storageUsed, totalFiles, totalNotes}:{
     totalFiles: number
 }) => {
 
-    function formatBytes2(bytes: number) {
-        console.log(storageUsed)
-      const gb = bytes / (1024 * 1024 * 1024);
-      const mb = bytes / (1024 * 1024);
-    
-      if (gb >= 1) return gb.toFixed(2) + " GB";
-      return mb.toFixed(2) + " MB";
-    }  
-
     function formatBytes(bytes: number) {
-  const sizes = ["B", "KB", "MB", "GB"];
-  const k = 1000;
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
-}
+        const sizes = ["B", "KB", "MB", "GB"];
+        const k = 1000;
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+    }
 
     
 

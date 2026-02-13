@@ -50,7 +50,7 @@ export default function DashboardClient({
     100
     );
 
-    const roundedPercent = percent.toFixed(3); // better precision
+    const roundedPercent = percent.toFixed(3);
 
 
   useEffect(()=>{
