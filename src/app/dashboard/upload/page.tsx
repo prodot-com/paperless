@@ -16,6 +16,7 @@ import {
   HardDrive
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 type FileItem = {
   id: string;
@@ -33,6 +34,7 @@ export default function UploadPage() {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -40,7 +42,15 @@ export default function UploadPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetch("/api/upload").then((res) => res.json()).then(setFiles);
+      fetch("/api/upload")
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to load files");
+          return res.json();
+        })
+        .then(setFiles)
+        .catch(() => {
+          toast.error("Unable to load files");
+        });
     }
   }, [status]);
 
@@ -48,17 +58,33 @@ export default function UploadPage() {
     const fileToUpload = selectedFile || file;
     if (!fileToUpload) return;
 
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("file", fileToUpload);
+    try {
+      setLoading(true);
 
-    await fetch("/api/upload", { method: "POST", body: formData });
-    setFile(null);
-    setLoading(false);
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
 
-    const res = await fetch("/api/upload");
-    setFiles(await res.json());
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error("Upload failed");
+
+      toast.success("File uploaded successfully");
+
+      const res = await fetch("/api/upload");
+      if (!res.ok) throw new Error("Failed to refresh file list");
+
+      setFiles(await res.json());
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+      setFile(null);
+    }
   }
+
 
   if (status === "loading") return <div className="p-12 animate-pulse text-neutral-400">Syncing vault...</div>;
 
@@ -181,37 +207,75 @@ export default function UploadPage() {
   );
 
   async function handleAction(id: string, action: string) {
-    const res = await fetch(`/api/upload/${id}/${action}`);
-    const { url } = await res.json();
-    window.open(url, "_blank");
+    try {
+      const res = await fetch(`/api/upload/${id}/${action}`);
+      if (!res.ok) throw new Error("Action failed");
+
+      const { url } = await res.json();
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      toast.error("Unable to perform action");
+    }
   }
 
   async function handleRename(f: FileItem) {
     const newName = prompt("Enter a new identifier", f.name);
     if (!newName || newName === f.name) return;
-    await fetch(`/api/upload/${f.id}/rename`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName }),
-    });
-    setFiles((prev) => prev.map((x) => (x.id === f.id ? { ...x, name: newName } : x)));
+
+    try {
+      const res = await fetch(`/api/upload/${f.id}/rename`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      });
+
+      if (!res.ok) throw new Error("Rename failed");
+
+      setFiles((prev) =>
+        prev.map((x) => (x.id === f.id ? { ...x, name: newName } : x))
+      );
+
+      toast.success("File renamed successfully");
+    } catch {
+      toast.error("Rename failed");
+    }
   }
 
   async function handleShare(id: string) {
-    const res = await fetch("/api/share/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "file", resourceId: id, expiresInHours: 24 }),
-    });
-    const { url } = await res.json();
-    await navigator.clipboard.writeText(url);
-    alert("Share link copied to clipboard");
+    try {
+      const res = await fetch("/api/share/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "file", resourceId: id, expiresInHours: 24 }),
+      });
+
+      if (!res.ok) throw new Error("Share failed");
+
+      const { url } = await res.json();
+      await navigator.clipboard.writeText(url);
+
+      toast.success("Share link copied to clipboard");
+    } catch {
+      toast.error("Unable to create share link");
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Remove this asset forever?")) return;
-    await fetch(`/api/upload/${id}`, { method: "DELETE" });
-    setFiles((prev) => prev.filter((x) => x.id !== id));
+
+    try {
+      const res = await fetch(`/api/upload/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Delete failed");
+
+      setFiles((prev) => prev.filter((x) => x.id !== id));
+
+      toast.success("File deleted successfully");
+    } catch {
+      toast.error("Delete failed");
+    }
   }
 }
 
