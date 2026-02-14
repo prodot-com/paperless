@@ -4,11 +4,18 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
-  Upload, File, Eye, Download, Trash2, 
-  Share2, Type, HardDrive, Loader2 
+  Upload, 
+  File, 
+  MoreVertical, 
+  Eye, 
+  Download, 
+  Trash2, 
+  Share2, 
+  Type, 
+  Search,
+  HardDrive
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import CustomModal from "@/components/CustomModal";
 
 type FileItem = {
   id: string;
@@ -22,127 +29,110 @@ export default function UploadPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // State Management
+  const [file, setFile] = useState<File | null>(null);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-
-  // Modal State
-  const [modal, setModal] = useState<{
-    isOpen: boolean;
-    type: "success" | "error" | "confirm";
-    title: string;
-    message: string;
-    onConfirm?: () => void;
-  }>({ isOpen: false, type: "success", title: "", message: "" });
-
-  const triggerModal = (type: "success" | "error" | "confirm", title: string, message: string, onConfirm?: () => void) => {
-    setModal({ isOpen: true, type, title, message, onConfirm });
-  };
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
 
   useEffect(() => {
-    if (status === "authenticated") fetchVaultData();
+    if (status === "authenticated") {
+      fetch("/api/upload").then((res) => res.json()).then(setFiles);
+    }
   }, [status]);
 
-  async function fetchVaultData() {
-    try {
-      const res = await fetch("/api/upload");
-      if (!res.ok) throw new Error("Connection failed.");
-      setFiles(await res.json());
-    } catch (err) {
-      triggerModal("error", "Vault Offline", "We couldn't reach your file vault. Please check your connection.");
-    }
-  }
+  async function uploadFile(selectedFile?: File) {
+    const fileToUpload = selectedFile || file;
+    if (!fileToUpload) return;
 
-  async function handleFileUpload(selectedFile?: File) {
-    if (!selectedFile) return;
     setLoading(true);
+    const formData = new FormData();
+    formData.append("file", fileToUpload);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+    await fetch("/api/upload", { method: "POST", body: formData });
+    setFile(null);
+    setLoading(false);
 
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!res.ok) throw new Error("Upload failed. File might be too large.");
-      
-      triggerModal("success", "Asset Secured", `${selectedFile.name} was successfully added to your vault.`);
-      fetchVaultData();
-    } catch (err: any) {
-      triggerModal("error", "Security Block", err.message);
-    } finally {
-      setLoading(false);
-    }
+    const res = await fetch("/api/upload");
+    setFiles(await res.json());
   }
 
-  const handleDeleteRequest = (id: string, name: string) => {
-    triggerModal("confirm", "Permanently Remove?", `Are you sure you want to shred "${name}"? This cannot be reversed.`, async () => {
-      try {
-        const res = await fetch(`/api/upload/${id}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Delete operation failed.");
-        setFiles(prev => prev.filter(f => f.id !== id));
-      } catch (err: any) {
-        triggerModal("error", "Operation Failed", err.message);
-      }
-    });
-  };
-
-  if (status === "loading") return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FDFDFD] dark:bg-[#0a0a0a]">
-      <Loader2 className="animate-spin text-neutral-300" size={32} />
-    </div>
-  );
+  if (status === "loading") return <div className="p-12 animate-pulse text-neutral-400">Syncing vault...</div>;
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0a0a] transition-colors p-4 md:p-12 selection:bg-blue-100">
-      <CustomModal {...modal} onClose={() => setModal({ ...modal, isOpen: false })} />
-
+    <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0a0a] transition-colors p-4 md:p-12">
       <div className="max-w-5xl mx-auto">
-        <header className="mb-10">
-          <div className="flex items-center gap-2 text-blue-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
-            <HardDrive size={14} />
-            <span>Encrypted Vault</span>
+        
+        {/* Header Section - Better alignment on small screens */}
+        <header className="mb-8 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-blue-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
+              <HardDrive size={14} />
+              <span>Digital Asset Manager</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-light tracking-tight italic font-serif text-neutral-900 dark:text-white">File Vault</h1>
+            <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
+              Logged in as <span className="font-medium text-neutral-800 dark:text-neutral-200 block sm:inline">{session?.user?.email}</span>
+            </p>
           </div>
-          <h1 className="text-4xl font-light tracking-tight italic font-serif text-neutral-900 dark:text-white">Assets</h1>
         </header>
 
-        <div 
-          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setIsDragging(false);
-            const dropped = e.dataTransfer.files[0];
-            if (dropped) handleFileUpload(dropped);
-          }}
-          className={`relative group border-2 border-dashed rounded-[2.5rem] p-10 md:p-20 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] ${
-            isDragging ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 scale-[0.98]" : "border-neutral-200 dark:border-neutral-800 shadow-2xl shadow-neutral-100 dark:shadow-none"
-          }`}
-        >
-          <div className={`p-5 rounded-2xl mb-5 transition-all ${isDragging || loading ? "bg-blue-500 text-white" : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400"}`}>
-            {loading ? <Loader2 className="animate-spin" size={32} /> : <Upload size={32} />}
-          </div>
-          <h3 className="text-xl font-medium mb-2">{loading ? "Securing asset..." : "Drop to upload"}</h3>
-          <p className="text-sm text-neutral-400 mb-8">Documents or images up to 50MB</p>
-          
-          <label className="cursor-pointer bg-black dark:bg-white text-white dark:text-black px-8 py-3 rounded-2xl text-sm font-medium hover:opacity-80 transition-all active:scale-95 shadow-lg">
-            Browse Files
-            <input type="file" className="hidden" onChange={(e) => handleFileUpload(e.target.files?.[0] || undefined)} />
-          </label>
+        <div>
+          {loading ? (
+            <div className="min-h-[250px] md:min-h-70 relative group border-2 border-dashed rounded-3xl p-8 md:p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] border-neutral-300 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none">
+              <div className="p-4 rounded-2xl mb-4 bg-neutral-50 dark:bg-neutral-900 text-neutral-400">
+                <Upload size={32} className="animate-bounce"/>
+              </div>
+              <h3 className="text-lg font-medium mb-1 text-center">Uploading your asset...</h3>
+            </div>
+          ) : (
+            <div 
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const droppedFile = e.dataTransfer.files[0];
+                if (droppedFile) uploadFile(droppedFile);
+              }}
+              className={`relative group border-2 border-dashed rounded-3xl p-8 md:p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] ${
+                isDragging ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 scale-[0.98]" : "border-neutral-300 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none"
+              }`}
+            >
+              <div className={`p-4 rounded-2xl mb-4 transition-colors ${isDragging ? "bg-blue-500 text-white" : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400"}`}>
+                <Upload size={32} />
+              </div>
+              <h3 className="text-base md:text-lg font-medium mb-1 text-center">
+                {isDragging ? "Ready to drop" : "Drop file to store"}
+              </h3>
+              <p className="text-xs md:text-sm text-neutral-400 mb-6 text-center">PDF, Images, or Documents up to 50MB</p>
+              
+              <label className="cursor-pointer bg-[#1A1A1A] dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-xl text-sm font-medium hover:opacity-80 transition-all active:scale-95">
+                Choose File
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  onChange={(e) => uploadFile(e.target.files?.[0] || undefined)} 
+                />
+              </label>
+            </div>
+          )}
         </div>
 
-        {/* File Grid */}
-        <div className="mt-16">
+        <div className="mt-12 md:mt-16">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400">Archived ({files.length})</h2>
-            <div className="h-[1px] flex-1 bg-neutral-100 dark:bg-neutral-900 mx-6" />
+            <h2 className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-neutral-400 shrink-0">Stored Assets ({files.length})</h2>
+            <div className="h-[1px] flex-1 bg-neutral-100 dark:bg-neutral-900 mx-4 md:mx-6" />
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            <AnimatePresence mode="popLayout">
+          <div className="space-y-4 md:space-y-3">
+            <AnimatePresence>
+              {files.length === 0 && (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 text-neutral-300 italic">The vault is currently empty.</motion.p>
+              )}
               {files.map((f) => (
                 <motion.div
                   layout
@@ -150,29 +140,36 @@ export default function UploadPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   key={f.id}
-                  className="group bg-white dark:bg-[#0d0d0d] border border-neutral-100 dark:border-neutral-800 p-4 rounded-3xl flex items-center justify-between hover:border-neutral-300 dark:hover:border-neutral-600 transition-all shadow-sm"
+                  className="group bg-white dark:bg-[#0d0d0d] border border-neutral-100 dark:border-neutral-800 p-3 md:p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between hover:border-neutral-300 dark:hover:border-neutral-600 transition-all shadow-sm gap-4"
                 >
-                  <div className="flex items-center gap-4 flex-1 min-w-0 px-2">
-                    <div className="w-12 h-12 shrink-0 bg-neutral-50 dark:bg-neutral-900 rounded-2xl flex items-center justify-center text-neutral-400 group-hover:text-blue-500 transition-colors">
-                      <File size={22} />
+                  <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                    <div className="w-10 h-10 shrink-0 bg-neutral-50 dark:bg-neutral-900 rounded-xl flex items-center justify-center text-neutral-400 group-hover:text-blue-500 transition-colors">
+                      <File size={20} />
                     </div>
                     <div className="overflow-hidden">
-                      <p className="text-sm font-medium truncate pr-4 text-neutral-800 dark:text-neutral-200">{f.name}</p>
-                      <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold mt-1">
+                      <p className="text-sm font-medium truncate pr-2">{f.name}</p>
+                      <p className="text-[10px] text-neutral-400 uppercase tracking-tighter font-bold">
                         {Math.round(f.size / 1024)} KB • {new Date(f.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1">
-                    <ActionIcon icon={<Eye size={18} />} onClick={() => window.open(f.path, "_blank")} />
-                    <ActionIcon icon={<Share2 size={18} />} onClick={() => triggerModal("success", "Link Ready", "The share link has been copied to your clipboard.")} />
-                    <div className="w-[1px] h-6 bg-neutral-100 dark:bg-neutral-800 mx-2" />
+                  {/* Actions Area - Scrollable on mobile or wrapped */}
+                  <div className="flex items-center justify-between sm:justify-end gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-neutral-50 dark:border-neutral-900">
+                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                        <FileActionBtn icon={<Eye size={16} />} onClick={() => handleAction(f.id, 'view')} label="View" />
+                        <FileActionBtn icon={<Type size={16} />} onClick={() => handleRename(f)} label="Rename" />
+                        <FileActionBtn icon={<Download size={16} />} onClick={() => handleAction(f.id, 'download')} label="Save" />
+                        <FileActionBtn icon={<Share2 size={16} />} onClick={() => handleShare(f.id)} label="Share" />
+                    </div>
+                    
+                    <div className="w-[1px] h-4 bg-neutral-100 dark:bg-neutral-800 mx-1 md:mx-2 shrink-0" />
+                    
                     <button 
-                      onClick={() => handleDeleteRequest(f.id, f.name)}
-                      className="p-3 cursor-pointer text-neutral-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all"
+                      onClick={() => handleDelete(f.id)}
+                      className="p-2 cursor-pointer text-neutral-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all shrink-0"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </motion.div>
@@ -183,15 +180,50 @@ export default function UploadPage() {
       </div>
     </div>
   );
+
+  async function handleAction(id: string, action: string) {
+    const res = await fetch(`/api/upload/${id}/${action}`);
+    const { url } = await res.json();
+    window.open(url, "_blank");
+  }
+
+  async function handleRename(f: FileItem) {
+    const newName = prompt("Enter a new identifier", f.name);
+    if (!newName || newName === f.name) return;
+    await fetch(`/api/upload/${f.id}/rename`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+    });
+    setFiles((prev) => prev.map((x) => (x.id === f.id ? { ...x, name: newName } : x)));
+  }
+
+  async function handleShare(id: string) {
+    const res = await fetch("/api/share/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "file", resourceId: id, expiresInHours: 24 }),
+    });
+    const { url } = await res.json();
+    await navigator.clipboard.writeText(url);
+    alert("Share link copied to clipboard");
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Remove this asset forever?")) return;
+    await fetch(`/api/upload/${id}`, { method: "DELETE" });
+    setFiles((prev) => prev.filter((x) => x.id !== id));
+  }
 }
 
-function ActionIcon({ icon, onClick }: { icon: any, onClick: () => void }) {
+function FileActionBtn({ icon, onClick, label }: { icon: any, onClick: () => void, label: string }) {
   return (
     <button 
       onClick={onClick}
-      className="p-3 cursor-pointer text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-900 rounded-2xl transition-all"
+      className="flex cursor-pointer items-center gap-2 p-2 px-2 md:px-3 text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-900 rounded-lg transition-all"
     >
       {icon}
+      <span className="text-[10px] font-bold uppercase tracking-wider hidden lg:block">{label}</span>
     </button>
   );
 }
