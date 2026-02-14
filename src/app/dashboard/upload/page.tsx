@@ -66,7 +66,6 @@ export default function UploadPage() {
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0a0a] transition-colors p-4 md:p-12">
       <div className="max-w-5xl mx-auto">
         
-        {/* Header Section - Better alignment on small screens */}
         <header className="mb-8 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <div className="flex items-center gap-2 text-blue-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
