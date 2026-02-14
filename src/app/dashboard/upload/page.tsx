@@ -35,7 +35,6 @@ export default function UploadPage() {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<{
     isOpen: boolean;
     type: "error" | "confirm" | "rename";
@@ -192,7 +191,6 @@ export default function UploadPage() {
                     </div>
                   </div>
 
-                  {/* Actions Area - Scrollable on mobile or wrapped */}
                   <div className="flex items-center justify-between sm:justify-end gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-neutral-50 dark:border-neutral-900">
                     <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
                         <FileActionBtn icon={<Eye size={16} />} onClick={() => handleAction(f.id, 'view')} label="View" />
@@ -215,18 +213,17 @@ export default function UploadPage() {
             </AnimatePresence>
           </div>
         </div>
-              <CustomModal
-  isOpen={modal.isOpen}
-  onClose={() =>
-    setModal((prev) => ({ ...prev, isOpen: false }))
-  }
-  type={modal.type}
-  title={modal.title}
-  message={modal.message}
-  defaultValue={modal.file?.name}
-  onConfirm={handleModalConfirm}
-/>
-
+        <CustomModal
+        isOpen={modal.isOpen}
+        onClose={() =>
+          setModal((prev) => ({ ...prev, isOpen: false }))
+        }
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+        defaultValue={modal.file?.name}
+        onConfirm={handleModalConfirm}
+      />
       </div>
     </div>
   );
@@ -272,64 +269,62 @@ export default function UploadPage() {
     }
   }
 
-function handleDelete(f: FileItem) {
-  setModal({
-    isOpen: true,
-    type: "confirm",
-    title: "Delete File",
-    message: "Are you sure you want to delete this file permanently?",
-    file: f,
-  });
-}
+  function handleDelete(f: FileItem) {
+    setModal({
+      isOpen: true,
+      type: "confirm",
+      title: "Delete File",
+      message: "Are you sure you want to delete this file permanently?",
+      file: f,
+    });
+  }
 
+  async function handleModalConfirm(value?: string) {
+    if (!modal.file) return;
 
-async function handleModalConfirm(value?: string) {
-  if (!modal.file) return;
+    try {
+      if (modal.type === "rename") {
+        if (!value || value.trim() === modal.file.name) {
+          toast.error("Invalid file name");
+          return;
+        }
 
-  try {
-    if (modal.type === "rename") {
-      if (!value || value.trim() === modal.file.name) {
-        toast.error("Invalid file name");
-        return;
+        const res = await fetch(`/api/upload/${modal.file.id}/rename`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: value.trim() }),
+        });
+
+        if (!res.ok) throw new Error();
+
+        setFiles((prev) =>
+          prev.map((x) =>
+            x.id === modal.file?.id ? { ...x, name: value.trim() } : x
+          )
+        );
+
+        toast.success("File renamed successfully");
       }
 
-      const res = await fetch(`/api/upload/${modal.file.id}/rename`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: value.trim() }),
-      });
+      if (modal.type === "confirm") {
+        const res = await fetch(`/api/upload/${modal.file.id}`, {
+          method: "DELETE",
+        });
 
-      if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error();
 
-      setFiles((prev) =>
-        prev.map((x) =>
-          x.id === modal.file?.id ? { ...x, name: value.trim() } : x
-        )
-      );
+        setFiles((prev) =>
+          prev.filter((x) => x.id !== modal.file?.id)
+        );
 
-      toast.success("File renamed successfully");
+        toast.success("File deleted successfully");
+      }
+    } catch {
+      toast.error("Action failed. Please try again.");
+    } finally {
+      setModal((prev) => ({ ...prev, isOpen: false }));
     }
-
-    if (modal.type === "confirm") {
-      const res = await fetch(`/api/upload/${modal.file.id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error();
-
-      setFiles((prev) =>
-        prev.filter((x) => x.id !== modal.file?.id)
-      );
-
-      toast.success("File deleted successfully");
-    }
-  } catch {
-    toast.error("Action failed. Please try again.");
-  } finally {
-    setModal((prev) => ({ ...prev, isOpen: false }));
   }
-}
-
 }
 
 function FileActionBtn({ icon, onClick, label }: { icon: any, onClick: () => void, label: string }) {
