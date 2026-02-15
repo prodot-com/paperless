@@ -19,6 +19,20 @@ export default async function DashboardHome() {
     _sum: { size: true },
   });
 
+  const recentFiles = await prisma.file.findMany({
+    where: { userId: session?.user?.id },
+    select: { name: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const recentNotes = await prisma.note.findMany({
+    where: { userId: session?.user?.id },
+    orderBy: { updatedAt: "desc" },
+    take: 5,
+    select: { id: true, title: true },
+  });
+
+  console.log(session?.user);
   const storageUsed = storageAgg._sum.size ?? 0;
 
   return (
@@ -26,6 +40,20 @@ export default async function DashboardHome() {
       totalNotes={totalNotes}
       totalFiles={totalFiles}
       storageUsed={storageUsed}
+      recentNotes={recentNotes}
+      recentFiles={recentFiles}
+      session={session?.user}
     />
   );
 }
+
+// prisma.file.findMany({
+//       where: { userId },
+//       select: { size: true },
+//     }),
+//     prisma.note.findMany({
+//       where: { userId },
+//       orderBy: { updatedAt: "desc" },
+//       take: 5,
+//       select: { id: true, title: true },
+//     }),
