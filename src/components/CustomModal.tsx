@@ -17,7 +17,6 @@ type ModalProps = {
 export default function CustomModal({ isOpen, onClose, type, title, message, defaultValue, onConfirm }: ModalProps) {
   const [inputValue, setInputValue] = useState(defaultValue || "");
 
-  // Reset input value when modal opens with a new default
   useEffect(() => {
     if (isOpen) setInputValue(defaultValue || "");
   }, [isOpen, defaultValue]);

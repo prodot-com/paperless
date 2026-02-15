@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import CustomModal from "@/components/CustomModal";
+import { allowedTypes, MAX_SIZE } from "@/lib/fileTypes";
 
 type FileItem = {
   id: string;
@@ -48,6 +49,19 @@ export default function UploadPage() {
     message: "",
   });
 
+
+  function validateFile(file: File): string | null {
+  if (!allowedTypes.includes(file.type)) {
+    return "Unsupported file type.";
+  }
+
+  if (file.size > MAX_SIZE) {
+    return "File exceeds 50MB limit.";
+  }
+
+  return null;
+}
+
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
@@ -66,36 +80,58 @@ export default function UploadPage() {
     }
   }, [status]);
 
-  async function uploadFile(selectedFile?: File) {
-    const fileToUpload = selectedFile || file;
-    if (!fileToUpload) return;
+async function uploadFile(selectedFile?: File) {
+  const fileToUpload = selectedFile || file;
+  if (!fileToUpload) return;
 
-    try {
-      setLoading(true);
+  const validationError = validateFile(fileToUpload);
 
-      const formData = new FormData();
-      formData.append("file", fileToUpload);
-
-      const uploadRes = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!uploadRes.ok) throw new Error("Upload failed");
-
-      toast.success("File uploaded successfully");
-
-      const res = await fetch("/api/upload");
-      if (!res.ok) throw new Error("Failed to refresh file list");
-
-      setFiles(await res.json());
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-      setFile(null);
-    }
+  if (validationError) {
+    setModal({
+      isOpen: true,
+      type: "error",
+      title: "Upload Blocked",
+      message: validationError,
+    });
+    return;
   }
+
+  try {
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", fileToUpload);
+
+    const uploadRes = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await uploadRes.json();
+
+    if (!uploadRes.ok) {
+      throw new Error(data.error || "Upload failed");
+    }
+
+    toast.success("File uploaded successfully");
+
+    const res = await fetch("/api/upload");
+    if (!res.ok) throw new Error("Failed to refresh file list");
+
+    setFiles(await res.json());
+  } catch (err: any) {
+    setModal({
+      isOpen: true,
+      type: "error",
+      title: "Upload Failed",
+      message: err.message || "Something went wrong",
+    });
+  } finally {
+    setLoading(false);
+    setFile(null);
+  }
+}
+
 
 
   if (status === "loading") return <div className="p-12 animate-pulse text-neutral-400">Syncing vault...</div>;
@@ -132,11 +168,28 @@ export default function UploadPage() {
               onDrop={(e) => {
                 e.preventDefault();
                 setIsDragging(false);
+
                 const droppedFile = e.dataTransfer.files[0];
-                if (droppedFile) uploadFile(droppedFile);
+                if (!droppedFile) return;
+
+                const validationError = validateFile(droppedFile);
+
+                if (validationError) {
+                  setModal({
+                    isOpen: true,
+                    type: "error",
+                    title: "Invalid File",
+                    message: validationError,
+                  });
+                  return;
+                }
+
+                uploadFile(droppedFile);
               }}
               className={`relative group border-2 border-dashed rounded-3xl p-8 md:p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] ${
-                isDragging ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 scale-[0.98]" : "border-neutral-300 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none"
+                isDragging
+                  ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 scale-[0.98]"
+                  : "border-neutral-300 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none"
               }`}
             >
               <div className={`p-4 rounded-2xl mb-4 transition-colors ${isDragging ? "bg-blue-500 text-white" : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400"}`}>
@@ -152,6 +205,7 @@ export default function UploadPage() {
                 <input 
                   type="file" 
                   className="hidden" 
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp,.gif,.zip,.pptx"
                   onChange={(e) => uploadFile(e.target.files?.[0] || undefined)} 
                 />
               </label>

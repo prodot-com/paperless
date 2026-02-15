@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { S3Client } from "@aws-sdk/client-s3";
+import { allowedTypes, MAX_SIZE } from "@/lib/fileTypes";
 // import { r2 } from "@/lib/r2";
 
 const r2 = new S3Client({
@@ -32,45 +33,74 @@ export async function GET() {
 
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    /* ------------------ VALIDATION ------------------ */
+
+
+
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Unsupported file type" },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json(
+        { error: "File exceeds 50MB limit" },
+        { status: 400 }
+      );
+    }
+
+    /* ------------------ SAFE FILE NAME ------------------ */
+
+    const cleanName = file.name.replace(/[^\w.\-]/g, "_");
+    const key = `${session.user.id}/${Date.now()}-${cleanName}`;
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME!,
+        Key: key,
+        Body: buffer,
+        ContentType: file.type,
+      })
+    );
+
+    const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
+
+    const saved = await prisma.file.create({
+      data: {
+        name: cleanName,
+        path: publicUrl,
+        size: file.size,
+        type: file.type,
+        userId: session.user.id,
+      },
+    });
+
+    return NextResponse.json(saved);
+
+  } catch (error) {
+    console.error("Upload error:", error);
+    return NextResponse.json(
+      { error: "Upload failed" },
+      { status: 500 }
+    );
   }
-
-  const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-
-  if (!file) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
-  }
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  const key = `${session.user.id}/${Date.now()}-${file.name}`;
-
-  await r2.send(
-    new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
-    })
-  );
-
-  const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
-
-  const saved = await prisma.file.create({
-    data: {
-      name: file.name,
-      path: publicUrl,
-      size: file.size,
-      type: file.type,
-      userId: session.user.id,
-    },
-  });
-
-  return NextResponse.json(saved);
 }
-
 
