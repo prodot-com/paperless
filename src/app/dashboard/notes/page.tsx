@@ -7,7 +7,7 @@ import NotesEditor from "@/components/NotesEditor";
 export default async function NotesPage({
   searchParams,
 }: {
-  searchParams?: { q?: string };
+  searchParams?: { q?: string; id?: string };
 }) {
   const session = await getServerSession(authOptions);
 
@@ -15,8 +15,9 @@ export default async function NotesPage({
     redirect("/login");
   }
 
-  const params = await searchParams;   // 👈 MUST await
+  const params = await searchParams;
   const query = params?.q ?? "";
+  const activeId = params?.id ?? null;
 
   const notes = await prisma.note.findMany({
     where: {
@@ -34,8 +35,9 @@ export default async function NotesPage({
     initialNotes={notes.map((note) => ({
       id: note.id,
       title: note.title,
-      content: note.content ?? "", // ✅ fix here
+      content: note.content ?? "", 
     }))}
+    initialActiveId={activeId}
   />
 );
 

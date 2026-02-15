@@ -27,16 +27,21 @@ type Note = {
 
 export default function NotesEditor({
     initialNotes,
+    initialActiveId
 }: {
     initialNotes: Note[];
+    initialActiveId?: string | null
 }) {
     const [notes, setNotes] = useState(initialNotes);
-    const [activeId, setActiveId] = useState<string | null>(null);
+    const [activeId, setActiveId] = useState<string | null>(
+  initialActiveId ?? null
+);
     const [isSaving, setIsSaving] = useState(false);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    
 
     const previousId = useRef<string | null>(null);
     const debounceRef = useRef<NodeJS.Timeout | null>(null);

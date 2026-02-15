@@ -22,13 +22,14 @@ export default async function DashboardHome() {
   const recentFiles = await prisma.file.findMany({
     where: { userId: session?.user?.id },
     select: { name: true },
+    take:3,
     orderBy: { createdAt: "desc" },
   });
 
   const recentNotes = await prisma.note.findMany({
     where: { userId: session?.user?.id },
     orderBy: { updatedAt: "desc" },
-    take: 5,
+    take: 3,
     select: { id: true, title: true },
   });
 
@@ -46,14 +47,3 @@ export default async function DashboardHome() {
     />
   );
 }
-
-// prisma.file.findMany({
-//       where: { userId },
-//       select: { size: true },
-//     }),
-//     prisma.note.findMany({
-//       where: { userId },
-//       orderBy: { updatedAt: "desc" },
-//       take: 5,
-//       select: { id: true, title: true },
-//     }),
