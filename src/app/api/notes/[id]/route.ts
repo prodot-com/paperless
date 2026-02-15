@@ -13,7 +13,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await context.params;   // 👈 FIX HERE
+    const { id } = await context.params;
     const { title, content } = await req.json();
 
     const updated = await prisma.note.updateMany({
@@ -54,7 +54,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await context.params;   // 👈 FIX HERE
+    const { id } = await context.params;
 
     const deleted = await prisma.note.deleteMany({
       where: {

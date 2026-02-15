@@ -52,7 +52,6 @@ export default function SettingsClient({
 
       <div className="border relative z-10 mx-auto px-6 md:px-16 py-12 md:py-14 space-y-10">
         
-        {/* Header Summary */}
         <header>
           <h1 className="text-3xl md:text-4xl font-light tracking-tight italic font-serif text-neutral-900 dark:text-white">
             System Details

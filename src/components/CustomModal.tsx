@@ -34,7 +34,7 @@ export default function CustomModal({ isOpen, onClose, type, title, message, def
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-sm bg-white dark:bg-[#0d0d0d] border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-2xl p-8"
+            className="relative w-full max-w-sm bg-white dark:bg-[#0d0d0d] border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-2xl p-5"
           >
             <div className="flex flex-col items-center text-center">
               <div className={`p-3 rounded-2xl mb-4 ${

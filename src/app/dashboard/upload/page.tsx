@@ -13,7 +13,8 @@ import {
   Share2, 
   Type, 
   Search,
-  HardDrive
+  HardDrive,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -56,7 +57,7 @@ export default function UploadPage() {
   }
 
   if (file.size > MAX_SIZE) {
-    return "File exceeds 50MB limit.";
+    return "File exceeds size limit.";
   }
 
   return null;
@@ -153,64 +154,81 @@ async function uploadFile(selectedFile?: File) {
           </div>
         </header>
 
-        <div>
-          {loading ? (
-            <div className="min-h-[250px] md:min-h-70 relative group border-2 border-dashed rounded-3xl p-8 md:p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] border-neutral-300 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none">
-              <div className="p-4 rounded-2xl mb-4 bg-neutral-50 dark:bg-neutral-900 text-neutral-400">
-                <Upload size={32} className="animate-bounce"/>
-              </div>
-              <h3 className="text-lg font-medium mb-1 text-center">Uploading your asset...</h3>
-            </div>
-          ) : (
-            <div 
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setIsDragging(false);
+        <div className="relative w-full">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="uploading"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.1 }}
+                className="min-h-[280px] relative border-2 border-blue-500/50 rounded-xl p-12 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] overflow-hidden"
+              >
 
-                const droppedFile = e.dataTransfer.files[0];
-                if (!droppedFile) return;
+                <div className="relative z-10 flex flex-col items-center">
+                  <motion.div
+                    animate={{ scale: [1, 0.9, 1] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="p-5 rounded-3xl bg-blue-500 text-white shadow-[0_0_40px_rgba(59,130,246,0.5)] mb-6"
+                  >
+                    <Loader2 size={32} className="animate-spin" />
+                  </motion.div>
+                  <h3 className="text-lg font-medium tracking-tight italic font-serif">Uploading File...</h3>
+                  {/* <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-blue-500 mt-2">Writing to Vault</p> */}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="idle"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  const droppedFile = e.dataTransfer.files[0];
+                  if (droppedFile) uploadFile(droppedFile);
+                }}
+                className={`min-h-[280px] relative group border-2 border-dashed rounded-xl p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] ${
+                  isDragging
+                    ? "border-blue-500 bg-blue-50/30 dark:bg-blue-900/10 scale-[0.99] shadow-2xl shadow-blue-500/5"
+                    : "border-neutral-200 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none hover:border-neutral-300 dark:hover:border-neutral-700"
+                }`}
+              >
+                <motion.div
+                  animate={isDragging ? { scale: 1.2, rotate: 5 } : { scale: 1 }}
+                  className={`p-5 rounded-[1.8rem] mb-5 transition-colors shadow-sm ${
+                    isDragging
+                      ? "bg-blue-500 text-white"
+                      : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400 group-hover:text-neutral-600"
+                  }`}
+                >
+                  <Upload size={32} />
+                </motion.div>
 
-                const validationError = validateFile(droppedFile);
+                <h3 className="text-lg font-medium mb-1 tracking-tight">
+                  {isDragging ? "Drop to secure" : "Drop file to store"}
+                </h3>
+                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 mb-8">
+                  PDF • Word • Image • ZIP (Max 2MB)
+                </p>
 
-                if (validationError) {
-                  setModal({
-                    isOpen: true,
-                    type: "error",
-                    title: "Invalid File",
-                    message: validationError,
-                  });
-                  return;
-                }
-
-                uploadFile(droppedFile);
-              }}
-              className={`relative group border-2 border-dashed rounded-3xl p-8 md:p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] ${
-                isDragging
-                  ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 scale-[0.98]"
-                  : "border-neutral-300 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none"
-              }`}
-            >
-              <div className={`p-4 rounded-2xl mb-4 transition-colors ${isDragging ? "bg-blue-500 text-white" : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400"}`}>
-                <Upload size={32} />
-              </div>
-              <h3 className="text-base md:text-lg font-medium mb-1 text-center">
-                {isDragging ? "Ready to drop" : "Drop file to store"}
-              </h3>
-              <p className="text-xs md:text-sm text-neutral-400 mb-6 text-center">PDF, Images, or Documents up to 50MB</p>
-              
-              <label className="cursor-pointer bg-[#1A1A1A] dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-xl text-sm font-medium hover:opacity-80 transition-all active:scale-95">
-                Choose File
-                <input 
-                  type="file" 
-                  className="hidden" 
-                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.webp,.gif,.zip,.pptx"
-                  onChange={(e) => uploadFile(e.target.files?.[0] || undefined)} 
-                />
-              </label>
-            </div>
-          )}
+                <label className="cursor-pointer bg-black dark:bg-white text-white dark:text-black px-8 py-3 rounded-xl text-sm font-medium hover:opacity-80 transition-all active:scale-95 shadow-lg shadow-black/5 dark:shadow-none">
+                  Browse File
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.doc,.docx,.pptx,.txt,.jpg,.jpeg,.png,.webp,.gif,.zip"
+                    onChange={(e) => uploadFile(e.target.files?.[0] || undefined)}
+                  />
+                </label>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="mt-12 md:mt-16">

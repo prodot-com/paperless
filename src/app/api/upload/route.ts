@@ -47,10 +47,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    /* ------------------ VALIDATION ------------------ */
-
-
-
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         { error: "Unsupported file type" },
@@ -60,12 +56,10 @@ export async function POST(req: Request) {
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { error: "File exceeds 50MB limit" },
+        { error: "File exceeds size limit" },
         { status: 400 }
       );
     }
-
-    /* ------------------ SAFE FILE NAME ------------------ */
 
     const cleanName = file.name.replace(/[^\w.\-]/g, "_");
     const key = `${session.user.id}/${Date.now()}-${cleanName}`;

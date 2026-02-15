@@ -43,7 +43,7 @@ export async function GET(
       Key: key,
       ResponseContentDisposition: `attachment; filename="${file.name}"`,
     }),
-    { expiresIn: 60 } // 1 minute
+    { expiresIn: 60 }
   );
 
   return NextResponse.json({ url });

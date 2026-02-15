@@ -50,10 +50,8 @@ export default function Dashboard({
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#050505] text-[#1A1A1A] dark:text-neutral-100 flex flex-col md:flex-row transition-colors duration-500">
 
-      {/* --- DESKTOP SIDEBAR --- */}
       <aside className="hidden md:flex w-72 border-r border-neutral-100 dark:border-neutral-900 flex-col bg-white dark:bg-[#050505] sticky top-0 h-screen z-20">
 
-        {/* Branding */}
         <div className="p-8 flex items-center gap-3 group cursor-default">
           <div className="relative">
             <Note className="text-3xl text-neutral-900 dark:text-white transition-transform group-hover:rotate-12 duration-300" />
@@ -62,7 +60,6 @@ export default function Dashboard({
           <span className="font-serif italic text-xl tracking-tight">paperless</span>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 px-4 space-y-1.5 mt-2">
           <SidebarItem href="/dashboard" icon={<Home size={18} />} label="Workspace" active={pathname === "/dashboard"} />
           <SidebarItem href="/dashboard/notes" icon={<FileText size={18} />} label="Notes Archive" active={pathname.startsWith("/dashboard/notes")} />

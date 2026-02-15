@@ -37,7 +37,7 @@ export async function GET( req: Request,{ params }: { params: Promise<{ id: stri
       Bucket: process.env.R2_BUCKET_NAME!,
       Key: key,
     }),
-    { expiresIn: 60 * 5 } // 5 minutes
+    { expiresIn: 60 * 5 } 
   );
 
   return NextResponse.json({ url: signedUrl });

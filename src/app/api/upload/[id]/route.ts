@@ -34,8 +34,6 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // 🔑 Extract R2 key from URL
-  // example: https://pub-xxx.r2.dev/userId/123-file.pdf
   const key = file.path.split("/").slice(-2).join("/");
 
   await r2.send(
