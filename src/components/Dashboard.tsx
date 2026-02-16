@@ -97,8 +97,7 @@ export default function Dashboard({
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="relative shrink-0">
                 <img
-                  // src={session?.user?.image}
-                  src="/pic.jpg"
+                  src={session?.user?.image}
                   alt="profile"
                   className="w-9 h-9 rounded-xl object-cover group-hover:grayscale-0 transition-all duration-500 border border-neutral-100 dark:border-neutral-800"
                 />
@@ -106,12 +105,10 @@ export default function Dashboard({
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-bold truncate text-neutral-800 dark:text-neutral-200 uppercase tracking-tighter">
-                  {/* {session?.user?.name} */}
-                  Ryan gosling
+                  {session?.user?.name}
                 </p>
                 <p className="text-[10px] text-neutral-400 truncate flex items-center gap-1">
-                    {/* {session?.user?.email} */}
-                    ryangosling@outlook.com
+                    {session?.user?.email}
                 </p>
               </div>
             </div>

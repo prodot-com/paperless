@@ -3,10 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Note from "@/lib/logo";
-import { Sun, Moon, X, ArrowRight, ShieldCheck } from "lucide-react";
+import { Sun, Moon, X, ArrowRight, ShieldCheck, Github, GithubIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image"; // Added for optimized image rendering
+import Link from "next/link";
 
 const Landing = () => {
   const [loginModal, setLoginModal] = useState(false);
@@ -31,7 +32,6 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0a0a] text-[#1A1A1A] dark:text-neutral-100 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 overflow-x-hidden transition-colors duration-300">
       
-      {/* Background Grid Pattern */}
       <div className="fixed inset-0 z-0 opacity-20 dark:opacity-10 pointer-events-none">
         <svg width="100%" height="100%">
           <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
@@ -73,6 +73,13 @@ const Landing = () => {
             <Sun className="h-5 w-5 dark:hidden" />
             <Moon className="h-5 w-5 hidden dark:block" />
           </button>
+          <Link 
+          href="https://github.com/prodot-com/paperless"
+          target="_blank"
+          className="cursor-pointer bg-[#1A1A1A] dark:bg-white text-white dark:text-black p-2 rounded-full hover:bg-neutral-700 dark:hover:bg-neutral-300 transition-all shadow-sm active:scale-95"
+          >
+            <Github className="h-6 w-6 "/>
+          </Link>
           <button 
             onClick={manageSignin}
             className="cursor-pointer bg-[#1A1A1A] dark:bg-white text-white dark:text-black px-5 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-medium hover:bg-blue-600 dark:hover:bg-blue-500 transition-all shadow-sm active:scale-95"
@@ -115,10 +122,7 @@ const Landing = () => {
           </div>
         </div>
 
-      <div className="mt-24 md:mt-40 relative max-w-6xl mx-auto px-4">
-          <div className="absolute top-12 left-1/2 -translate-x-[48%] w-[85%] h-[70%] bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-3xl shadow-sm rotate-[-4deg] -z-10 opacity-40"></div>
-          <div className="absolute top-6 left-1/2 -translate-x-[49%] w-[92%] h-[85%] bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-3xl shadow-md rotate-[2deg] -z-10 opacity-60"></div>
-          
+      <div className="mt-24 md:mt-40 relative max-w-7xl md:max-w-6xl mx-auto px-4">
           <motion.div 
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -143,13 +147,13 @@ const Landing = () => {
             priority
           />
 
-            <div className="absolute top-0 left-0 right-0 h-12 bg-white/20 dark:bg-black/20 backdrop-blur-md border-b border-white/10 dark:border-white/5 pointer-events-none flex items-center px-6">
+            {/* <div className="absolute top-0 left-0 right-0 h-12 bg-white/20 dark:bg-black/20 backdrop-blur-md border-b border-white/10 dark:border-white/5 pointer-events-none flex items-center px-6">
               <div className="flex gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-400/50" />
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-400/50" />
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/50" />
               </div>
-            </div>
+            </div> */}
           </motion.div>
       </div>
       </main>
@@ -209,11 +213,11 @@ const Landing = () => {
     <footer className="relative w-full bg-white dark:bg-[#0a0a0a] overflow-hidden transition-colors">
       <div className="flex flex-wrap justify-center gap-3 md:gap-4 pt-10 px-4">
         {[
-          { label: "Github", href: "https://github.com/prodot-com" }, // Your GitHub based on profile data
-          { label: "Developer", href: "https://linkedin.com/in/probal-ghosh" }, // Professional outreach
-          { label: "Documentation", href: "/docs" },
-          { label: "Privacy Vault", href: "/privacy" },
-          { label: "MIT License", href: "/license" },
+          { label: "Github", href: "https://github.com/prodot-com/paperless" },
+          { label: "Contact", href: "https://probalghosh.dev" },
+          { label: "Documentation", href: "https://github.com/prodot-com/paperless/blob/main/README.md" },
+          // { label: "Privacy Vault", href: "/privacy" },
+          { label: "License", href: "https://github.com/prodot-com/paperless/tree/main?tab=GPL-3.0-1-ov-file#readme" },
         ].map((link) => (
           <a
             key={link.label}

@@ -63,8 +63,7 @@ export default function Workspace({
         <motion.div 
           animate={{ 
             scale: [1, 1.2, 1],
-            // opacity: [0.75, 0.25, 0.75] 
-            opacity: [0.95, 0.95, 0.95] 
+            opacity: [0.75, 0.25, 0.75] 
           }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-500/40 blur-[120px] dark:bg-blue-600/20" 
@@ -79,8 +78,7 @@ export default function Workspace({
               <div className="absolute inset-0 bg-blue-500 rounded-2xl blur-2xl opacity-10 group-hover:opacity-30 transition-opacity" />
               {session?.image ? (
                 <img 
-                  // src={session.image}
-                  src="/pic.jpg" 
+                  src={session.image} 
                   alt="Avatar" 
                   className="relative w-16 h-16 rounded-[22px] border border-white dark:border-neutral-800 object-cover shadow-2xl shadow-neutral-200 dark:shadow-none"
                 />
@@ -92,11 +90,9 @@ export default function Workspace({
             </div>
             <div>
               <h1 className="text-3xl font-light tracking-tight text-neutral-900 dark:text-white italic font-serif">
-                {/* Welcome, <span className="font-sans not-italic font-medium">{session?.name?.split(' ')[0] || "User"}</span> */}
-                Welcome, <span className="font-sans not-italic font-medium">Ryan</span>
+                Welcome, <span className="font-sans not-italic font-medium">{session?.name?.split(' ')[0] || "User"}</span>
               </h1>
-              {/* <p className="text-neutral-400 text-sm mt-1">{session?.email}</p> */}
-              <p className="text-neutral-400 text-sm mt-1">ryangosling@outlook.com</p>
+              <p className="text-neutral-400 text-sm mt-1">{session?.email}</p>
             </div>
           </div>
 
