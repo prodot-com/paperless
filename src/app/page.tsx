@@ -216,7 +216,6 @@ const Landing = () => {
           { label: "Github", href: "https://github.com/prodot-com/paperless" },
           { label: "Contact", href: "https://probalghosh.dev" },
           { label: "Documentation", href: "https://github.com/prodot-com/paperless/blob/main/README.md" },
-          // { label: "Privacy Vault", href: "/privacy" },
           { label: "License", href: "https://github.com/prodot-com/paperless/tree/main?tab=GPL-3.0-1-ov-file#readme" },
         ].map((link) => (
           <a
@@ -234,7 +233,15 @@ const Landing = () => {
         ))}
       </div>
 
-      <p className="mt-6 text-center text-xs md:text-sm text-gray-500 dark:text-neutral-600">
+      <p className="mt-5 text-center text-xs md:text-sm text-gray-500 dark:text-neutral-600">
+        Build by{" "}
+        <a 
+        href="https://probalghosh.dev"
+        target="_blank">
+          <span className="font-bold hover:underline cursor-pointer">Probal</span>
+        </a>
+      </p>
+      <p className="mt-5 text-center text-xs md:text-sm text-gray-500 dark:text-neutral-600">
         © 2026 Notes Buddy. All rights reserved.
       </p>
 
