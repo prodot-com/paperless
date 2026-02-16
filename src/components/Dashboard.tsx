@@ -54,10 +54,10 @@ export default function Dashboard({
 
         <div className="p-8 flex items-center gap-3 group cursor-default">
           <div className="relative">
-            <Note className="text-3xl text-neutral-900 dark:text-white transition-transform group-hover:rotate-12 duration-300" />
+            <Note className="text-4xl text-neutral-900 dark:text-white transition-transform group-hover:rotate-12 duration-300" />
             <div className="absolute -inset-1 bg-blue-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <span className="font-serif italic text-xl tracking-tight">paperless</span>
+          <span className="font-serif font-bold italic text-2xl tracking-tight">paperless</span>
         </div>
 
         <nav className="flex-1 px-4 space-y-1.5 mt-2">
@@ -97,7 +97,8 @@ export default function Dashboard({
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="relative shrink-0">
                 <img
-                  src={session?.user?.image}
+                  // src={session?.user?.image}
+                  src="/pic.jpg"
                   alt="profile"
                   className="w-9 h-9 rounded-xl object-cover group-hover:grayscale-0 transition-all duration-500 border border-neutral-100 dark:border-neutral-800"
                 />
@@ -105,10 +106,12 @@ export default function Dashboard({
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-bold truncate text-neutral-800 dark:text-neutral-200 uppercase tracking-tighter">
-                  {session?.user?.name}
+                  {/* {session?.user?.name} */}
+                  Ryan gosling
                 </p>
                 <p className="text-[10px] text-neutral-400 truncate flex items-center gap-1">
-                    {session?.user?.email}
+                    {/* {session?.user?.email} */}
+                    ryangosling@outlook.com
                 </p>
               </div>
             </div>
