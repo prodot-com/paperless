@@ -43,26 +43,22 @@ const Landing = () => {
 
       <nav className="z-20 flex justify-between items-center px-5 md:px-8 py-4 md:py-6 backdrop-blur-md bg-white/70 dark:bg-[#0a0a0a]/70 border-b border-neutral-100 dark:border-neutral-800 sticky top-0 transition-colors">
         <div 
-          className="flex items-center gap-3 md:gap-4 group cursor-pointer relative" 
+          className="flex items-center gap-3 md:gap-2 group cursor-pointer relative" 
           onClick={() => router.push('/')}
         >
           <div className="relative flex items-center justify-center">
             
             <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-400/10 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 scale-150" />
             
-            <Note className="relative z-10 text-2xl md:text-3xl text-neutral-900 dark:text-white transition-all duration-500 ease-out group-hover:rotate-12 group-hover:scale-110" />
+            <Note className="relative z-10 text-2xl md:text-3xl text-neutral-900 dark:text-white" />
           </div>
 
           <div className="flex flex-col items-start leading-none">
-            <span className="text-lg md:text-xl font-bold tracking-[-0.03em] uppercase text-neutral-900 dark:text-white group-hover:tracking-widest transition-all duration-500 ease-in-out">
+            <span className="text-lg md:text-xl font-bold tracking-[-0.03em] uppercase text-neutral-900 dark:text-white ">
               paperless
-            </span>
-            <span className="hidden md:block text-[8px] md:text-[9px] uppercase tracking-[0.4em] font-black text-blue-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-700 delay-75">
-              Digital Vault
             </span>
           </div>
 
-          <div className="absolute -bottom-2 left-0 w-0 h-[1.5px] bg-neutral-900 dark:bg-white transition-all duration-500 group-hover:w-full opacity-0 group-hover:opacity-20" />
         </div>
         
         <div className="flex items-center gap-4 md:gap-6 justify-center">
