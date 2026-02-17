@@ -57,7 +57,7 @@ const Landing = () => {
             <span className="text-lg md:text-xl font-bold tracking-[-0.03em] uppercase text-neutral-900 dark:text-white group-hover:tracking-widest transition-all duration-500 ease-in-out">
               paperless
             </span>
-            <span className="text-[8px] md:text-[9px] uppercase tracking-[0.4em] font-black text-blue-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-700 delay-75">
+            <span className="hidden md:block text-[8px] md:text-[9px] uppercase tracking-[0.4em] font-black text-blue-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-700 delay-75">
               Digital Vault
             </span>
           </div>
@@ -82,9 +82,9 @@ const Landing = () => {
           </Link>
           <button 
             onClick={manageSignin}
-            className="cursor-pointer bg-[#1A1A1A] dark:bg-white text-white dark:text-black px-5 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-medium hover:bg-blue-600 dark:hover:bg-blue-500 transition-all shadow-sm active:scale-95"
+            className="cursor-pointer bg-[#1A1A1A] dark:bg-white text-white dark:text-black px-5 py-3 md:py-2.5 rounded-full text-xs md:text-sm font-medium hover:bg-blue-600 dark:hover:bg-blue-500 transition-all shadow-sm active:scale-95"
           >
-            {session ? "Dashboard" : "Sign in"}
+            {session ? "Go" : "Sign in"}
           </button>
         </div>
       </nav>
