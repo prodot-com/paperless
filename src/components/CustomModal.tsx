@@ -1,13 +1,13 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, AlertCircle, HelpCircle, Type } from "lucide-react";
+import { X, AlertCircle, HelpCircle, Type, Skull } from "lucide-react";
 import { useState, useEffect } from "react";
 
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  type: "error" | "confirm" | "rename";
+  type: "error" | "confirm" | "rename" | "delete";
   title: string;
   message: string;
   defaultValue?: string;
@@ -39,10 +39,12 @@ export default function CustomModal({ isOpen, onClose, type, title, message, def
             <div className="flex flex-col items-center text-center">
               <div className={`p-3 rounded-2xl mb-4 ${
                 type === 'error' ? 'bg-red-50 text-red-500 dark:bg-red-500/10' : 
+                type === 'delete' ? 'bg-red-50 text-red-500 dark:bg-red-500/10' : 
                 type === 'rename' ? 'bg-indigo-50 text-indigo-500 dark:bg-indigo-500/10' :
                 'bg-blue-50 text-blue-500 dark:bg-blue-500/10'
               }`}>
                 {type === 'error' ? <AlertCircle size={28} /> : 
+                type === 'delete' ? <Skull size={28} /> : 
                  type === 'rename' ? <Type size={28} /> : 
                  <HelpCircle size={28} />}
               </div>
@@ -73,11 +75,11 @@ export default function CustomModal({ isOpen, onClose, type, title, message, def
                     if(onConfirm) onConfirm(type === 'rename' ? inputValue : undefined); 
                     onClose(); 
                   }}
-                  className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all shadow-sm cursor-pointer ${
-                    type === 'error' ? 'bg-red-500 text-white' : 'bg-black dark:bg-white text-white dark:text-black'
+                  className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all shadow-sm cursor-pointer 
+                    ${type === 'error' ? 'bg-red-500 text-white' : type === 'delete'?"bg-red-500 text-white" : 'bg-black dark:bg-white text-white dark:text-black'
                   }`}
                 >
-                  {type === 'error' ? 'Dismiss' : type === 'rename' ? 'Update' : 'Confirm'}
+                  {type === 'error' ? 'Dismiss' : type === 'delete' ? 'Delete' : type === 'rename' ? 'Update' : 'Confirm'}
                 </button>
               </div>
             </div>

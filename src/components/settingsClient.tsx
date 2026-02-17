@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { Sun, Moon, Monitor, HardDrive, User, ShieldCheck, Zap } from "lucide-react";
 import { motion } from "framer-motion";
+import DeleteComponent from "./deleteComponent";
 
 type Props = {
   session?: {
@@ -172,6 +173,10 @@ export default function SettingsClient({
               </div>
             </div>
           </div>
+        </section>
+
+        <section>
+          <DeleteComponent/>
         </section>
 
       </div>
