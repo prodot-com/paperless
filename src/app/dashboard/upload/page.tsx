@@ -159,24 +159,84 @@ async function uploadFile(selectedFile?: File) {
             {loading ? (
               <motion.div
                 key="uploading"
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.1 }}
-                className="min-h-70 relative border-2 border-blue-500/50 rounded-xl p-12 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] overflow-hidden"
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="relative rounded-3xl p-14 flex flex-col items-center justify-center 
+                          bg-white/70 dark:bg-[#0f0f0f]/70 
+                          backdrop-blur-2xl 
+                          border border-neutral-200/60 dark:border-neutral-800/60 
+                          shadow-[0_40px_120px_-20px_rgba(0,0,0,0.15)]
+                          overflow-hidden"
               >
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute -top-40 left-1/2 -translate-x-1/2 
+                                  w-[600px] h-[600px] 
+                                  bg-blue-500/10 dark:bg-blue-500/5 
+                                  blur-[120px] rounded-full" />
+                </div>
 
-                <div className="relative z-10 flex flex-col items-center">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
                   <motion.div
-                    animate={{ scale: [1, 0.9, 1] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                    className="p-5 rounded-3xl bg-blue-500 text-white shadow-[0_0_40px_rgba(59,130,246,0.5)] mb-6"
+                    animate={{ x: ["-120%", "120%"] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-0 h-[1px] w-[50%] 
+                              bg-gradient-to-r from-transparent via-blue-500/70 to-transparent 
+                              blur-sm opacity-60"
+                  />
+                </div>
+
+                <div className="relative z-10 flex flex-col items-center w-full max-w-sm">
+
+                  <motion.div
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    className="relative mb-10"
                   >
-                    <Loader2 size={32} className="animate-spin" />
+                    <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full opacity-60" />
+                    
+                    <div className="relative p-6 rounded-2xl 
+                                    bg-white dark:bg-neutral-900 
+                                    border border-neutral-200 dark:border-neutral-800 
+                                    shadow-sm text-blue-500">
+                      <Upload size={30} />
+                    </div>
                   </motion.div>
-                  <h3 className="text-lg font-medium tracking-tight italic font-serif">Uploading File...</h3>
-                  {/* <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-blue-500 mt-2">Writing to Vault</p> */}
+
+                  <div className="text-center space-y-2 mb-8">
+                    <motion.h3
+                      className="text-xl font-medium tracking-tight font-serif italic 
+                                text-neutral-900 dark:text-white"
+                      animate={{ opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      Uploading Securely
+                    </motion.h3>
+
+                    <p className="text-[11px] uppercase tracking-[0.25em] 
+                                  font-semibold text-blue-500/70">
+                      Encrypting & Syncing
+                    </p>
+                  </div>
+
+                  <div className="w-full h-[4px] bg-neutral-200/60 dark:bg-neutral-800 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 3.5, ease: "easeInOut" }}
+                      className="relative h-full bg-gradient-to-r from-blue-500 to-indigo-500"
+                    >
+                      <div className="absolute inset-0 blur-sm opacity-60 bg-blue-400" />
+                    </motion.div>
+                  </div>
+
+                  <p className="mt-6 text-[11px] text-neutral-400 font-medium tracking-wide">
+                    Please keep this window open
+                  </p>
                 </div>
               </motion.div>
+
             ) : (
               <motion.div
                 key="idle"
@@ -214,7 +274,7 @@ async function uploadFile(selectedFile?: File) {
                   {isDragging ? "Drop to secure" : "Drop file to store"}
                 </h3>
                 <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 mb-8">
-                  PDF • Word • Image • ZIP (Max 2MB)
+                  PDF • Word • Image • ZIP (Max 1MB)
                 </p>
 
                 <label className="cursor-pointer bg-black dark:bg-white text-white dark:text-black px-8 py-3 rounded-xl text-sm font-medium hover:opacity-80 transition-all active:scale-95 shadow-lg shadow-black/5 dark:shadow-none">
