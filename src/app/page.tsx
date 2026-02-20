@@ -153,11 +153,11 @@ const Landing = () => {
             </div>
           </div>
 
-          <div className="mt-20 overflow-hidden pointer-events-none select-none">
+          {/* <div className="mt-20 overflow-hidden pointer-events-none select-none">
              <h1 className="text-[15vw] font-black text-black/[0.02] leading-none text-center">
               PAPERLESS
              </h1>
-          </div>
+          </div> */}
         </div>
       </footer>
 
