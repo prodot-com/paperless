@@ -83,22 +83,31 @@ const Landing = () => {
         </div>
       </main>
 
-      <footer className="bg-white border-t border-neutral-100 pt-20">
-        <div className="max-w-8xl mx-auto px-25">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-24">
-  
+      <footer className="bg-white border-t border-neutral-200 pt-20">
+        <div className="max-w-8xl mx-auto md:px-25 px-6">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-12">
+
             <div className="max-w-sm">
               <div className="flex items-center gap-3 mb-6 group cursor-default">
-                <div className="w-10 h-10 bg-neutral-900 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12">
-                  <Note className="text-white w-6 h-6" />
+                
+                <div className="relative w-10 h-10 bg-neutral-900 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:rotate-6">
+                  <div className="absolute inset-0 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-2xl" />
+                  <Note className="relative text-white w-6 h-6" />
                 </div>
+
                 <div className="flex flex-col">
-                  <span className="font-bold tracking-tighter uppercase text-xl leading-none">paperless</span>
+                  <span className="font-extrabold tracking-tight uppercase text-xl text-neutral-900 leading-none">
+                    Paperless
+                  </span>
+                  <span className="text-xs text-neutral-400 tracking-wide mt-1">
+                    Smart document storage
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col items-start md:items-end gap-8">
+            <div className="flex flex-col items-start md:items-end gap-8 w-full md:w-auto">
+              
               <div className="flex flex-wrap gap-x-10 gap-y-4">
                 {[
                   { label: "Github", href: "https://github.com/prodot-com/paperless" },
@@ -107,32 +116,36 @@ const Landing = () => {
                   { label: "Documentation", href: "https://github.com/prodot-com/paperless/blob/main/README.md" },
                 ].map((link) => (
                   <Link 
-                    key={link.label} 
-                    href={link.href} 
-                    className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 hover:text-blue-500 transition-colors"
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    className="relative text-xs uppercase tracking-[0.18em] font-semibold text-neutral-500 transition-colors duration-300 hover:text-neutral-900"
                   >
                     {link.label}
+                    <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-neutral-900 transition-all duration-300 group-hover:w-full"></span>
                   </Link>
                 ))}
               </div>
               
-              <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-neutral-300 font-medium">
-                  Build by <span className="text-neutral-900 font-bold">Probal Ghosh</span>
+              <div className="text-center md:text-right w-full">
+                <p className="text-xs uppercase tracking-widest text-neutral-400 font-medium">
+                  Built by <span className="text-neutral-900 font-semibold">Probal Ghosh</span>
                 </p>
-                <p className="text-[10px] uppercase tracking-widest text-neutral-300 mt-1">
+                <p className="text-xs uppercase tracking-widest text-neutral-300 mt-1">
                   © 2026 Paperless
                 </p>
               </div>
+
             </div>
           </div>
 
-          <div className="border w-full border-black relative text-center select-none">
+          <div className="w-full relative text-center select-none">
             <h2 className="text-[17vw] md:text-[12vw] font-black text-neutral-500 leading-none tracking-tighter">
               PAPERLESS<span className="text-indigo-600">.</span>
             </h2>
-            <div className="border border-black absolute bottom-0 w-full h-full bg-gradient-to-t from-white via-white/40 to-transparent" />
+            <div className="absolute bottom-0 w-full h-full bg-gradient-to-t from-white via-white/40 to-transparent" />
           </div>
+
         </div>
       </footer>
 
