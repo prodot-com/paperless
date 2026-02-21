@@ -19,6 +19,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Paperless",
   description: "your personal vault",
+  icons: {
+    icon: [
+      {url: "/logo.svg", type: "image/svg+xml"}
+    ]
+  }
 };
 
 export default function RootLayout({
