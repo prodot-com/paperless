@@ -210,13 +210,13 @@ export default function NotesEditor({
             
             <aside className={`
                 absolute md:relative z-30 h-full bg-white dark:bg-[#0a0a0a] transition-all duration-300 ease-in-out
-                w-full md:w-[320px] lg:w-[380px] border-r border-neutral-100 dark:border-neutral-800 flex flex-col
+                w-full md:w-[320px] lg:w-95 border-r border-neutral-100 dark:border-neutral-800 flex flex-col
                 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
             `}>
                 <div className="p-6">
                     <button
                         onClick={createNote}
-                        className="w-full group relative flex items-center justify-center gap-2 mb-6 px-4 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-sm font-medium hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-neutral-200 dark:shadow-none"
+                        className="cursor-pointer w-full group relative flex items-center justify-center gap-2 mb-6 px-4 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-medium hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-neutral-200 dark:shadow-none"
                     >
                         <Plus size={18} className="transition-transform group-hover:rotate-90" />
                         New Sheet
@@ -228,7 +228,7 @@ export default function NotesEditor({
                             placeholder="Search through vault..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-neutral-50 dark:bg-neutral-900 border border-transparent focus:border-neutral-200 dark:focus:border-neutral-800 rounded-2xl py-3 pl-11 pr-10 text-[13px] outline-none transition-all placeholder:text-neutral-400"
+                            className="w-full bg-neutral-200 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 focus:border-neutral-400 dark:focus:border-neutral-600 rounded-xl py-3 pl-11 pr-10 text-[13px] outline-none transition-all placeholder:text-neutral-400"
                         />
                         {searchQuery && (
                             <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400">
@@ -251,10 +251,10 @@ export default function NotesEditor({
                                         setActiveId(note.id);
                                         if (window.innerWidth < 768) setSidebarOpen(false);
                                     }}
-                                    className={`group relative p-4 rounded-[20px] cursor-pointer transition-all duration-300 overflow-hidden ${
+                                    className={`group relative p-4 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden ${
                                         note.id === activeId
-                                            ? "bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 shadow-sm"
-                                            : "hover:bg-neutral-50/50 dark:hover:bg-neutral-900/50 border border-transparent"
+                                            ? "bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600"
+                                            : "hover:bg-neutral-200/50 dark:hover:bg-neutral-800/70 border border-transparent"
                                     }`}
                                 >
                                     <div className="flex flex-col gap-1 pr-6">
@@ -274,9 +274,9 @@ export default function NotesEditor({
                                 </motion.div>
                             ))
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-20 px-6 opacity-30 text-center">
-                                <Search size={32} className="mb-3" />
-                                <p className="text-xs font-light italic tracking-wide">The archive is silent.</p>
+                            <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+                                <Search size={32} className="mb-3 text-neutral-600 dark:text-neutral-400" />
+                                <p className="text-xs font-light italic tracking-wide text-neutral-700 dark:text-neutral-400">The sheet is empty.</p>
                             </div>
                         )}
                     </AnimatePresence>
@@ -323,7 +323,7 @@ export default function NotesEditor({
 
             <button
                 onClick={refreshNotes}
-                className="flex items-center gap-2 px-1 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-all rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900"
+                className="cursor-pointer flex items-center gap-2 px-1 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-all rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900"
             >
                 <RefreshCcw
                 size={17}
@@ -356,7 +356,7 @@ export default function NotesEditor({
                                 <textarea
                                     value={activeNote.content}
                                     onChange={(e) => updateField("content", e.target.value)}
-                                    className="flex-1 w-full resize-none outline-none bg-transparent text-base md:text-xl leading-[1.8] font-light text-neutral-600 dark:text-neutral-400 placeholder:text-neutral-200 dark:placeholder:text-neutral-800 pb-20"
+                                    className="flex-1 w-full resize-none outline-none bg-transparent text-base md:text-xl leading-[1.8] font-light text-neutral-600 dark:text-neutral-400 placeholder:text-neutral-400 dark:placeholder:text-neutral-600 pb-20"
                                     placeholder="Pour your thoughts..."
                                 />
                             </motion.div>
