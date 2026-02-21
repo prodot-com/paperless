@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import Note from "@/lib/logo";
 import {
   FileText,
   Upload,
@@ -18,6 +17,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Logo from "@/lib/note";
 
 export default function Dashboard({
   session,
@@ -54,8 +54,7 @@ export default function Dashboard({
 
         <div className="p-8 flex items-center gap-3 group cursor-default">
           <div className="relative">
-            <Note className="text-4xl text-neutral-900 dark:text-white transition-transform group-hover:rotate-12 duration-300" />
-            <div className="absolute -inset-1 bg-blue-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Logo className="w-10 h-10 text-3xl dark:text-white text-black rotate-10" />
           </div>
           <span className="font-serif font-bold italic text-2xl tracking-tight">paperless</span>
         </div>
@@ -124,7 +123,7 @@ export default function Dashboard({
 
       <header className="md:hidden flex items-center justify-between px-6 py-5 bg-white/80 dark:bg-[#050505]/80 backdrop-blur-xl border-b border-neutral-100 dark:border-neutral-900 sticky top-0 z-30 transition-colors">
         <div className="flex items-center gap-2">
-          <Note className="text-2xl" />
+          <Logo className="text-2xl" />
           <span className="font-serif italic tracking-tight">paperless</span>
         </div>
         <button onClick={toggleTheme} className="p-2.5 bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 text-neutral-500">

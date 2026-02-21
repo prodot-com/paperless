@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Note from "@/lib/logo";
 import { ArrowRight, X, Moon, Sun } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { signIn, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import Logo from "@/lib/note";
 
 const Landing = () => {
   const [loginModal, setLoginModal] = useState(false);
@@ -34,8 +34,8 @@ const Landing = () => {
         px-6 py-3 rounded-xl backdrop-blur-xl bg-white/60 dark:bg-black/40 border border-black/15 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
         
         <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push('/')}>
-          <div className="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center transition-transform group-hover:rotate-6">
-            <Note className="text-white dark:text-black w-5 h-5" />
+          <div className="flex items-center justify-center">
+            <Logo className="dark:text-white text-black w-8 h-8 rotate-8" />
           </div>
           <span className="text-sm font-bold tracking-tighter uppercase text-black dark:text-white">paperless</span>
         </div>
@@ -98,8 +98,8 @@ const Landing = () => {
           <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-12">
             <div className="max-w-sm">
               <div className="flex items-center gap-3 mb-6 group">
-                <div className="w-10 h-10 bg-neutral-900 dark:bg-white rounded-2xl flex items-center justify-center transition-all group-hover:rotate-6">
-                  <Note className="text-white dark:text-black w-6 h-6" />
+                <div className="flex items-center justify-center">
+                  <Logo className="dark:text-white text-black w-8 h-8 rotate-8" />
                 </div>
                 <span className="font-extrabold tracking-tight uppercase text-xl text-neutral-900 dark:text-white leading-none">
                   Paperless
@@ -153,17 +153,17 @@ const Landing = () => {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-md bg-[#F9F9F7] dark:bg-[#111] rounded-[32px] shadow-2xl p-12 border border-white dark:border-white/10"
+              className="relative w-full max-w-md bg-[#F9F9F7] dark:bg-[#111] rounded-xl shadow-2xl p-12 border border-white dark:border-white/10"
             >
               <button onClick={() => setLoginModal(false)} className="absolute top-8 right-8 text-neutral-400 hover:text-black dark:hover:text-white transition-colors"><X size={24} /></button>
               <div className="text-center">
-                <div className="w-16 h-16 bg-black dark:bg-white rounded-2xl flex items-center justify-center mx-auto mb-8">
-                  <Note className="text-3xl text-white dark:text-black" />
+                <div className="flex items-center justify-center mx-auto mb-8">
+                  <Logo className="w-12 h-12 text-3xl dark:text-white text-black rotate-6" />
                 </div>
                 <h2 className="text-3xl font-medium tracking-tight mb-8 dark:text-white">Welcome to the Vault</h2>
                 <button
                   onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-                  className="w-full flex items-center justify-center gap-4 bg-white dark:bg-neutral-900 border border-black/[0.05] dark:border-white/10 py-4 rounded-xl font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all text-black dark:text-white"
+                  className="cursor-pointer w-full flex items-center justify-center gap-4 bg-white dark:bg-neutral-900 border border-black/[0.05] dark:border-white/10 py-4 rounded-xl font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all text-black dark:text-white"
                 >
                   <GoogleIcon />
                   Continue with Google
