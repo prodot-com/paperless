@@ -111,7 +111,7 @@ export default function Workspace({
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search the archive..."
-                  className="bg-transparent px-3 py-3 rounded-2xl text-sm outline-none flex-1 text-neutral-900 dark:text-white placeholder:text-neutral-400/60"
+                  className="bg-transparent px-3 py-3 rounded-2xl text-sm outline-none flex-1 text-neutral-900 dark:text-white placeholder:text-neutral-400"
                 />
 
                 <AnimatePresence>
@@ -136,14 +136,6 @@ export default function Workspace({
                 </button>
               </div>
             </div>
-
-            {/* <Link
-              href="/notes"
-              className="bg-[#1A1A1A] dark:bg-white text-white dark:text-black px-6 py-3 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium hover:opacity-80 transition-all shadow-xl shadow-blue-500/10 active:scale-95"
-            >
-              <Plus size={18} />
-              New Sheet
-            </Link> */}
           </div>
         </header>
 
@@ -161,7 +153,7 @@ export default function Workspace({
             </div>
             <div className="grid gap-3">
               {recentNotes.length === 0 ? (
-                <EmptyState message="The archive is silent." />
+                <EmptyState message="The sheet is empty." />
               ) : (
                 recentNotes.map((note) => (
                   <Link
@@ -238,8 +230,8 @@ function StatBox({ label, value, icon }: { label: string; value: string | number
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="p-12 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-[2rem] flex flex-col items-center justify-center bg-neutral-50/20 dark:bg-neutral-900/10">
-      <p className="text-xs font-light italic text-neutral-400 tracking-wide">{message}</p>
+    <div className="p-12 border border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl flex flex-col items-center justify-center bg-neutral-50/20 dark:bg-neutral-900/10">
+      <p className="text-xs font-light italic dark:text-neutral-400 text-neutral-700 tracking-wide">{message}</p>
     </div>
   );
 }
