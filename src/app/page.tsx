@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { signIn, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import Logo from "@/lib/note";
+import Logo from "@/lib/logo";
 
 const Landing = () => {
   const [loginModal, setLoginModal] = useState(false);
@@ -136,14 +136,14 @@ const Landing = () => {
             <h2 className="text-[16vw] md:text-[12vw] font-black text-neutral-300 dark:text-neutral-800 leading-none tracking-tighter transition-colors duration-500">
               PAPERLESS<span className="text-indigo-600">.</span>
             </h2>
-            <div className="absolute bottom-0 w-full h-full bg-gradient-to-t from-[#F9F9F7] dark:from-[#0A0A0A] via-transparent to-transparent" />
+            <div className="absolute bottom-0 w-full h-full bg-linear-to-t from-[#F9F9F7] dark:from-[#0A0A0A] via-transparent to-transparent" />
           </div>
         </div>
       </footer>
 
       <AnimatePresence>
         {loginModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setLoginModal(false)}
@@ -163,7 +163,7 @@ const Landing = () => {
                 <h2 className="text-3xl font-medium tracking-tight mb-8 dark:text-white">Welcome to the Vault</h2>
                 <button
                   onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-                  className="cursor-pointer w-full flex items-center justify-center gap-4 bg-white dark:bg-neutral-900 border border-black/[0.05] dark:border-white/10 py-4 rounded-xl font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all text-black dark:text-white"
+                  className="cursor-pointer w-full flex items-center justify-center gap-4 bg-white dark:bg-neutral-900 border border-black/5 dark:border-white/10 py-4 rounded-xl font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all text-black dark:text-white"
                 >
                   <GoogleIcon />
                   Continue with Google

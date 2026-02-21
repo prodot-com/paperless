@@ -17,7 +17,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import Logo from "@/lib/note";
+import Logo from "@/lib/logo";
 
 export default function Dashboard({
   session,
