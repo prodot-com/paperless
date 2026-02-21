@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/lib/logo";
+import { useTheme } from "next-themes";
 
 export default function Dashboard({
   session,
@@ -28,20 +29,35 @@ export default function Dashboard({
   storageUsed: number;
   children: React.ReactNode;
 }) {
-  const [isDark, setIsDark] = useState(false);
+  const {theme, setTheme, resolvedTheme} = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [loadingTab, setLoadingTab] = useState<string | null>(null);
 
   const pathname = usePathname();
+
+  useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") {
+      e.preventDefault();
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [resolvedTheme, setTheme]);
+
+  useEffect(()=>{
+    setMounted(true);
+  })
 
   useEffect(() => {
     setLoadingTab(null);
   }, [pathname]);
 
   const toggleTheme = () => {
-    const html = document.documentElement;
-    const dark = html.classList.toggle("dark");
-    setIsDark(dark);
-  };
+  setTheme(resolvedTheme === "dark" ? "light" : "dark");
+};
 
   const maxStorage = 1 * 1024 * 1024 * 1024;
   const percent = Math.min((storageUsed / maxStorage) * 100, 100);
@@ -70,8 +86,13 @@ export default function Dashboard({
               onClick={toggleTheme}
               className="cursor-pointer w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-all group"
             >
-              <span className="text-[10px] font-bold uppercase tracking-widest">{isDark ? "Dark" : "Light"}</span>
-              {isDark ? <Moon size={16} /> : <Sun size={16} />}
+              <span className="text-[10px] font-bold uppercase tracking-widest">{mounted && resolvedTheme === "dark" ? "Dark" : "Light"}</span>
+              {/* {isDark ? <Moon size={16} /> : <Sun size={16} />} */}
+              {mounted && resolvedTheme === "dark" ? (
+  <Moon size={16} />
+) : (
+  <Sun size={16} />
+)}
             </button>
           </div>
         </nav>
@@ -123,11 +144,15 @@ export default function Dashboard({
 
       <header className="md:hidden flex items-center justify-between px-6 py-5 bg-white/80 dark:bg-[#050505]/80 backdrop-blur-xl border-b border-neutral-100 dark:border-neutral-900 sticky top-0 z-30 transition-colors">
         <div className="flex items-center gap-2">
-          <Logo className="text-2xl" />
+          <Logo className="w-7 h-7 text-black dark:text-white rotate-10"/>
           <span className="font-serif italic tracking-tight">paperless</span>
         </div>
         <button onClick={toggleTheme} className="p-2.5 bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 text-neutral-500">
-          {isDark ? <Moon size={18} /> : <Sun size={18} />}
+          {mounted && resolvedTheme === "dark" ? (
+              <Moon size={16} />
+            ) : (
+              <Sun size={16} />
+            )}
         </button>
       </header>
 
