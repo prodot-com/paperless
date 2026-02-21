@@ -67,9 +67,6 @@ const Landing = () => {
       </nav>
 
       <main className="relative pt-56 pb-24 px-6 max-w-7xl mx-auto">
-        <div
-        className="absolute top-0 w-full h-14 border border-black"
-        ></div>
         <div className="flex flex-col items-center text-center mb-32">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
