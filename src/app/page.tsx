@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowRight, X, Moon, Sun, HardDrive, Zap, Box, Lock, Check, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import Logo from "@/lib/logo";
 
 // --- Types ---
 interface LogoProps {
@@ -15,17 +16,6 @@ interface FAQItemProps {
   answer: string;
 }
 
-// --- Minimalist Logo Component ---
-const Logo: React.FC<LogoProps> = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M4 6C4 4.89543 4.89543 4 6 4H14L20 10V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M14 4V10H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <rect x="8" y="12" width="8" height="2" fill="currentColor" />
-    <rect x="8" y="16" width="5" height="2" fill="currentColor" />
-  </svg>
-);
-
-// --- FAQ Item Component ---
 const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
@@ -60,9 +50,10 @@ const Landing: React.FC = () => {
 
   useEffect(() => {
     setMounted(true);
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDark(true);
-    }
+    // if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    //   setIsDark(true);
+    // }
+    setIsDark(false)
   }, []);
 
   useEffect(() => {
@@ -89,11 +80,11 @@ const Landing: React.FC = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-neutral-200/50 dark:bg-neutral-800/30 blur-[120px] rounded-full pointer-events-none" />
 
         <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-2xl backdrop-blur-xl bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
-          <div className="flex items-center gap-3 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth'})}>
-            <div className="flex items-center justify-center p-1.5 rounded-lg bg-black dark:bg-white transition-transform group-hover:scale-105">
-              <Logo className="text-white dark:text-black w-4 h-4 md:w-5 md:h-5" />
+          <div className="flex items-center gap-1 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth'})}>
+            <div className="flex items-center justify-center transition-transform group-hover:scale-105">
+              <Logo className="text-black dark:text-white w-4 h-4 md:w-6 md:h-6" />
             </div>
-            <span className="text-xs md:text-sm font-extrabold tracking-tighter uppercase text-black dark:text-white">paperless</span>
+            <span className="text-xs md:text-[16px] font-extrabold tracking-tighter uppercase text-black dark:text-white">paperless</span>
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
@@ -122,7 +113,7 @@ const Landing: React.FC = () => {
           </div>
         </nav>
 
-        <main className="relative pt-32 pb-16 md:pt-44 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
+        <main className="relative pt-32 pb-16 md:pt-50 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
           
           <motion.div 
             initial={{ opacity: 0, x: -20, y: 10 }}
@@ -147,7 +138,7 @@ const Landing: React.FC = () => {
             initial={{ opacity: 0, x: 20, y: -10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ duration: 1, delay: 0.4 }}
-            className="hidden lg:block absolute right-0 bottom-56 w-48 h-48 text-black dark:text-white opacity-80 pointer-events-none"
+            className="hidden lg:block absolute right-0 bottom-50 w-48 h-48 text-black dark:text-white opacity-80 pointer-events-none"
           >
             <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M40 100 L100 80 L160 100 L100 120 Z" />
@@ -166,8 +157,8 @@ const Landing: React.FC = () => {
             Your all-in-one <br /> digital asset platform <br />
             <div className="relative inline-block mt-2">
               <span className="font-serif italic font-light text-5xl sm:text-6xl md:text-[95px] pr-4 md:pr-8">perfectly structured</span>
-              {/* Hand-drawn Arrow */}
-              <svg className="absolute -right-2 md:-right-8 bottom-[-5px] md:bottom-2 w-8 h-8 md:w-12 md:h-12 text-black dark:text-white" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              
+              <svg className="hidden lg:block absolute -right-8 bottom-1 w-8 h-8 md:w-12 md:h-12 text-black dark:text-white" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 50 Q 45 45, 45 15" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
                 <path d="M30 22 L 45 15 L 52 28" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -334,9 +325,9 @@ const Landing: React.FC = () => {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-12 mb-12 text-center md:text-left">
               <div className="max-w-sm flex flex-col items-center md:items-start">
-                <div className="flex items-center gap-3 mb-4 md:mb-6 group">
-                  <div className="flex items-center justify-center p-2 rounded-lg bg-black dark:bg-white">
-                    <Logo className="text-white dark:text-black w-5 h-5 md:w-6 md:h-6" />
+                <div className="flex items-center gap-1 mb-4 md:mb-6 group">
+                  <div className="flex items-center justify-center p-2">
+                    <Logo className="dark:text-white text-black w-5 h-5 md:w-7 md:h-7" />
                   </div>
                   <span className="font-black tracking-tight uppercase text-xl md:text-2xl text-black dark:text-white leading-none">
                     Paperless
@@ -377,54 +368,6 @@ const Landing: React.FC = () => {
             </div>
           </div>
         </footer>
-
-        {/* <footer className="bg-white dark:bg-[#0A0A0A] border-t border-neutral-200 dark:border-white/5 pt-20 transition-colors duration-500">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-12">
-            <div className="max-w-sm">
-              <div className="flex items-center gap-3 mb-6 group">
-                <div className="flex items-center justify-center">
-                  <Logo className="dark:text-white text-black w-8 h-8 rotate-8" />
-                </div>
-                <span className="font-extrabold tracking-tight uppercase text-xl text-neutral-900 dark:text-white leading-none">
-                  Paperless
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-start md:items-end gap-8 w-full md:w-auto">
-              <div className="flex flex-wrap gap-x-10 gap-y-4">
-                {[
-                  { label: "Github", href: "https://github.com/prodot-com/paperless" },
-                  { label: "Contact", href: "https://probalghosh.dev" },
-                  { label: "License", href: "https://github.com/prodot-com/paperless/tree/main?tab=GPL-3.0-1-ov-file#readme" },
-                  { label: "Documentation", href: "https://github.com/prodot-com/paperless/blob/main/README.md" },
-                ].map((link) => (
-                  <Link 
-                    key={link.label}
-                    href={link.href}
-                    className="text-xs uppercase tracking-[0.18em] font-semibold text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-              <div className="text-center md:text-right w-full">
-                <p className="text-xs uppercase tracking-widest text-neutral-400 font-medium">
-                  Built by <span className="text-neutral-900 dark:text-white font-semibold">Probal Ghosh</span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full relative text-center select-none overflow-hidden">
-            <h2 className="text-[16vw] md:text-[12vw] font-black text-neutral-300 dark:text-neutral-800 leading-none tracking-tighter transition-colors duration-500">
-              PAPERLESS<span className="text-indigo-600">.</span>
-            </h2>
-            <div className="absolute bottom-0 w-full h-full bg-linear-to-t from-[#F9F9F7] dark:from-[#0A0A0A] via-transparent to-transparent" />
-          </div>
-        </div>
-      </footer> */}
 
         <AnimatePresence>
           {loginModal && (
