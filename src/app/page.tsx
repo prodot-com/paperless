@@ -76,10 +76,10 @@ const Landing: React.FC = () => {
     <div className={`${isDark ? 'dark' : ''} min-h-screen font-sans selection:bg-black/10 dark:selection:bg-white/20 transition-colors duration-500`}>
       <div className="min-h-screen bg-[#ffffff] dark:bg-[#0A0A0A] text-[#1A1A1A] dark:text-[#EDEDED] relative overflow-hidden transition-colors duration-500">
 
-        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-neutral-200/50 dark:bg-neutral-800/30 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-neutral-200/50 dark:bg-neutral-800/30 blur-[120px] rounded-full pointer-events-none" />
+        {/* <div className="absolute top-[-11%] left-[-19%] w-[50vw] h-[50vw] bg-indigo-200 dark:bg-indigo-900/50 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-neutral-200/50 dark:bg-neutral-100 blur-[10px] rounded-full pointer-events-none" /> */}
 
-        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-2xl backdrop-blur-xl bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-xl backdrop-blur-xl bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-1 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth'})}>
             <div className="flex items-center justify-center transition-transform group-hover:scale-105">
               <Logo className="text-black dark:text-white w-4 h-4 md:w-6 md:h-6" />
@@ -108,17 +108,23 @@ const Landing: React.FC = () => {
               onClick={manageSignin}
               className="cursor-pointer bg-black dark:bg-white text-white dark:text-black px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-black/10 dark:shadow-white/5"
             >
-              Vault Access
+              Access Here
             </button>
           </div>
         </nav>
 
         <main className="relative pt-32 pb-16 md:pt-50 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
           
+        <div className="absolute top-[0%] left-[0%] md:top-[-17%] md:left-[-40%] w-[70vw] h-[70vw] md:w-[50vw] md:h-[50vw] 
+        bg-indigo-300 md:bg-indigo-200 dark:bg-indigo-900/50 md:dark:bg-indigo-900/50 blur-[70px] md:blur-[120px] rounded-br-full pointer-events-none" />
+        
+        <div className="absolute top-[65%] right-0 md:top-[17%] md:-right-68 w-[70vw] h-[70vw] md:w-[40vw] md:h-[40vw] 
+        bg-green-300/75 md:bg-green-200 dark:bg-indigo-900/55 blur-[90px] md:blur-[120px] rounded-tl-full pointer-events-none" />
+
           <motion.div 
             initial={{ opacity: 0, x: -20, y: 10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
+            transition={{ duration: 3, delay: 0.7 }}
             className="hidden lg:block absolute -left-7 top-16 w-56 h-56 text-black dark:text-white opacity-80 pointer-events-none"
           >
             <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -137,7 +143,7 @@ const Landing: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, x: 20, y: -10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 1, delay: 0.4 }}
+            transition={{ duration: 3, delay: 0.5 }}
             className="hidden lg:block absolute right-0 bottom-50 w-48 h-48 text-black dark:text-white opacity-80 pointer-events-none"
           >
             <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -151,7 +157,7 @@ const Landing: React.FC = () => {
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.4 }}
             className="text-5xl sm:text-6xl md:text-[85px] font-black tracking-tight leading-[1.1] md:leading-[1.05] text-black dark:text-white mb-6 w-full relative z-10"
           >
             Your all-in-one <br /> digital asset platform <br />
@@ -169,7 +175,7 @@ const Landing: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-base sm:text-lg md:text-xl text-neutral-500 dark:text-neutral-400 mb-10 md:mb-12 max-w-2xl leading-relaxed font-normal px-2"
+            className="text-base font-serif italic sm:text-lg md:text-xl text-neutral-500 dark:text-neutral-400 mb-10 md:mb-12 max-w-2xl leading-relaxed font-normal px-2"
           >
             Managing your intellectual property is already challenging enough.<br className="hidden sm:block"/>
             Avoid further complications by ditching scattered files.
@@ -197,7 +203,7 @@ const Landing: React.FC = () => {
 
         </main>
 
-        <section id="features" className="relative z-10 py-24 md:py-32 px-6">
+        <section id="features" className="bg-[#ffffff] dark:bg-[#0A0A0A] relative z-10 py-24 md:py-32 px-6 border-t ">
           <div className="max-w-7xl mx-auto">
             <div className="mb-16 md:mb-20 text-center md:text-left">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-black dark:text-white mb-4 md:mb-6">Built for Focus. Designed for Control.</h2>
@@ -216,7 +222,7 @@ const Landing: React.FC = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ delay: i * 0.1 }}
-                  className="p-8 md:p-10 rounded-3xl bg-transparent border-2 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white transition-all group"
+                  className="p-8 md:p-10 rounded-xl bg-transparent border-2 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white transition-all group"
                 >
                   <div className="w-12 h-12 rounded-full border-2 border-black dark:border-white flex items-center justify-center mb-6 text-black dark:text-white group-hover:scale-110 transition-transform bg-transparent">
                     {feature.icon}
@@ -242,7 +248,7 @@ const Landing: React.FC = () => {
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-3xl bg-transparent border-2 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white transition-colors relative flex flex-col"
+                className="p-8 md:p-10 rounded-xl bg-transparent border-2 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white transition-colors relative flex flex-col"
               >
                 <h3 className="text-2xl md:text-3xl font-black text-black dark:text-white mb-2 tracking-tight">Base</h3>
                 <div className="mb-6 flex items-baseline gap-2">
@@ -269,7 +275,7 @@ const Landing: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-3xl bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white relative flex flex-col shadow-2xl"
+                className="p-8 md:p-10 rounded-xl bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white relative flex flex-col shadow-2xl"
               >
                 <div className="inline-flex self-start px-3 py-1 bg-white/20 dark:bg-black/10 text-white dark:text-black text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full mb-4">Most Popular</div>
                 <h3 className="text-2xl md:text-3xl font-black mb-2 tracking-tight">Pro</h3>
@@ -298,7 +304,7 @@ const Landing: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-3xl bg-transparent border-2 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white transition-colors relative flex flex-col"
+                className="p-8 md:p-10 rounded-xl bg-transparent border-2 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white transition-colors relative flex flex-col"
               >
                 <h3 className="text-2xl md:text-3xl font-black text-black dark:text-white mb-2 tracking-tight">
                   Enterprise
@@ -426,15 +432,15 @@ const Landing: React.FC = () => {
                 initial={{ scale: 0.95, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                className="relative w-full max-w-md bg-white dark:bg-[#111] rounded-3xl shadow-2xl p-8 sm:p-10 border-2 border-black/10 dark:border-white/10 overflow-hidden"
+                className="relative w-full max-w-md bg-white dark:bg-[#111] rounded-xl shadow-2xl p-8 sm:p-10 border-2 border-black/10 dark:border-white/10 overflow-hidden"
               >
                 <button onClick={() => setLoginModal(false)} className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-400 hover:text-black dark:hover:text-white transition-colors z-10">
                   <X size={20} strokeWidth={2.5} />
                 </button>
                 
                 <div className="text-center relative z-10">
-                  <div className="flex items-center justify-center mx-auto mb-6 sm:mb-8 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-black dark:bg-white shadow-xl shadow-black/10 dark:shadow-white/5 transform -rotate-6">
-                    <Logo className="w-6 h-6 sm:w-8 sm:h-8 text-white dark:text-black" />
+                  <div className="flex items-center justify-center mx-auto mb-6 sm:mb-8 w-14 h-14 sm:w-16 sm:h-16 rounded-xl shadow-xl shadow-black/50 dark:shadow-white/25 transform -rotate-6">
+                    <Logo className="w-6 h-6 sm:w-8 sm:h-8 dark:text-white text-black" />
                   </div>
                   
                   <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2 text-black dark:text-white">Verify Identity</h2>
@@ -450,10 +456,6 @@ const Landing: React.FC = () => {
                     <GoogleIcon />
                     Continue with Google
                   </button>
-
-                  <p className="text-[10px] text-neutral-400 mt-6 font-bold tracking-[0.2em] uppercase">
-                    Secured via NextAuth
-                  </p>
                 </div>
               </motion.div>
             </div>
