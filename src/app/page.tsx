@@ -144,7 +144,7 @@ const Landing: React.FC = () => {
             initial={{ opacity: 0, x: 20, y: -10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ duration: 3, delay: 0.5 }}
-            className="hidden lg:block absolute right-0 bottom-50 w-48 h-48 text-black dark:text-white opacity-80 pointer-events-none"
+            className="hidde lg:block absolute right-0 bottom-50 w-48 h-48 text-black dark:text-white opacity-80 pointer-events-none"
           >
             <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M40 100 L100 80 L160 100 L100 120 Z" />
@@ -389,11 +389,11 @@ const Landing: React.FC = () => {
               <div className="flex flex-col items-center md:items-end gap-6 md:gap-8 w-full md:w-auto">
                 <div className="flex flex-wrap justify-center md:justify-end gap-x-8 gap-y-4">
                   {[
-                    { label: "Github", href: "https://github.com/prodot-com/paperless" },
-                    { label: "Contact", href: "https://probalghosh.dev" },
-                    { label: "License", href: "#" },
-                    { label: "Documentation", href: "#" },
-                  ].map((link) => (
+                  { label: "Github", href: "https://github.com/prodot-com/paperless" },
+                  { label: "Contact", href: "https://probalghosh.dev" },
+                  { label: "License", href: "https://github.com/prodot-com/paperless/tree/main?tab=GPL-3.0-1-ov-file#readme" },
+                  { label: "Documentation", href: "https://github.com/prodot-com/paperless/blob/main/README.md" },
+                ].map((link) => (
                     <a 
                       key={link.label}
                       href={link.href}
