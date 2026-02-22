@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRight, X, Moon, Sun, HardDrive, Zap, Box, Lock, Check, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
-import Logo from "@/lib/logo";
-import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+
+// --- Mock Next.js Modules for Preview Environment ---
+const useSession = () => ({ data: null });
+const useRouter = () => ({ push: (url: string) => console.log(`Navigating to ${url}`) });
+const signIn = (provider: string, options: any) => console.log(`Signing in with ${provider}`);
 
 // --- Types ---
 interface LogoProps {
@@ -17,6 +18,14 @@ interface FAQItemProps {
   question: string;
   answer: string;
 }
+
+// Inline Logo Component
+const Logo: React.FC<LogoProps> = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path fillRule="evenodd" clipRule="evenodd" d="M5 5.5C5 4.119 6.119 3 7.5 3H14.5C17.538 3 20 5.462 20 8.5C20 11.538 17.538 14 14.5 14H10V18.5C10 19.881 8.881 21 7.5 21C6.119 21 5 19.881 5 18.5V5.5ZM10 6.5V10.5H14.5C15.605 10.5 16.5 9.605 16.5 8.5C16.5 7.395 15.605 6.5 14.5 6.5H10Z" />
+    <circle cx="17.5" cy="18.5" r="2.5" />
+  </svg>
+);
 
 const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -49,17 +58,20 @@ const Landing: React.FC = () => {
   const [loginModal, setLoginModal] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
   const [isDark, setIsDark] = useState<boolean>(false);
+  
   const { data: session } = useSession();
   const router = useRouter();
 
+  // Handle Hydration & Theme
   useEffect(() => {
     setMounted(true);
-    // if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    //   setIsDark(true);
-    // }
-    setIsDark(false)
+    // Automatically switch to dark mode based on system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setIsDark(true);
+    }
   }, []);
 
+  // Keyboard shortcut for theme
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") {
@@ -72,7 +84,8 @@ const Landing: React.FC = () => {
   }, []);
 
   const toggleTheme = () => setIsDark(!isDark);
-    const manageSignin = () => {
+  
+  const manageSignin = () => {
     if (session) {
       router.push('/dashboard');
     } else {
@@ -86,8 +99,12 @@ const Landing: React.FC = () => {
     <div className={`${isDark ? 'dark' : ''} min-h-screen font-sans selection:bg-black/10 dark:selection:bg-white/20 transition-colors duration-500`}>
       <div className="min-h-screen bg-[#ffffff] dark:bg-[#0A0A0A] text-[#1A1A1A] dark:text-[#EDEDED] relative overflow-hidden transition-colors duration-500">
 
-        {/* <div className="absolute top-[-11%] left-[-19%] w-[50vw] h-[50vw] bg-indigo-200 dark:bg-indigo-900/50 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-neutral-200/50 dark:bg-neutral-100 blur-[10px] rounded-full pointer-events-none" /> */}
+        {/* Ambient Glows: Optimized for both light and dark backgrounds */}
+        <div className="absolute top-[0%] left-[0%] md:top-[-17%] md:left-[-40%] w-[70vw] h-[70vw] md:w-[50vw] md:h-[50vw] 
+        bg-indigo-300 md:bg-indigo-200 dark:bg-indigo-500/20 md:dark:bg-indigo-500/15 blur-[70px] md:blur-[120px] rounded-br-full pointer-events-none" />
+        
+        <div className="absolute top-[65%] right-0 md:top-[17%] md:-right-68 w-[70vw] h-[70vw] md:w-[40vw] md:h-[40vw] 
+        bg-green-300/75 md:bg-green-200 dark:bg-emerald-500/15 blur-[90px] md:blur-[120px] rounded-tl-full pointer-events-none" />
 
         <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-xl backdrop-blur-xl bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-1 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth'})}>
@@ -98,12 +115,12 @@ const Landing: React.FC = () => {
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
-            <Link href="https://github.com/prodot-com/paperless" className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1.5 group">
+            <a href="https://github.com/prodot-com/paperless" className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1.5 group">
             Developer <ArrowRight size={10} className="transition-transform group-hover:translate-x-1"/>
-            </Link>
-            <Link href="https://probalghosh.dev" className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1.5 group">
+            </a>
+            <a href="https://probalghosh.dev" className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1.5 group">
               Company <ArrowRight size={10} className="transition-transform group-hover:translate-x-1"/>
-            </Link>
+            </a>
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
@@ -125,12 +142,6 @@ const Landing: React.FC = () => {
 
         <main className="relative pt-32 pb-16 md:pt-50 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
           
-        <div className="absolute top-[0%] left-[0%] md:top-[-17%] md:left-[-40%] w-[70vw] h-[70vw] md:w-[50vw] md:h-[50vw] 
-        bg-indigo-300 md:bg-indigo-200 dark:bg-indigo-900/50 md:dark:bg-indigo-900/50 blur-[70px] md:blur-[120px] rounded-br-full pointer-events-none" />
-        
-        <div className="absolute top-[65%] right-0 md:top-[17%] md:-right-68 w-[70vw] h-[70vw] md:w-[40vw] md:h-[40vw] 
-        bg-green-300/75 md:bg-green-200 dark:bg-indigo-900/55 blur-[90px] md:blur-[120px] rounded-tl-full pointer-events-none" />
-
           <motion.div 
             initial={{ opacity: 0, x: -20, y: 10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
@@ -213,7 +224,7 @@ const Landing: React.FC = () => {
 
         </main>
 
-        <section id="features" className="bg-[#ffffff] dark:bg-[#0A0A0A] relative z-10 py-24 md:py-32 px-6 border-t ">
+        <section id="features" className="bg-[#ffffff] dark:bg-[#0A0A0A] relative z-10 py-24 md:py-32 px-6 border-t border-black/10 dark:border-white/10">
           <div className="max-w-7xl mx-auto">
             <div className="mb-16 md:mb-20 text-center md:text-left">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-black dark:text-white mb-4 md:mb-6">Built for Focus. Designed for Control.</h2>
@@ -425,7 +436,7 @@ const Landing: React.FC = () => {
               <h2 className="text-[16vw] md:text-[14vw] font-black text-neutral-400/75 dark:text-neutral-800/85 leading-none tracking-tighter transition-colors duration-500">
                 PAPERLESS<span className="text-black dark:text-white">.</span>
               </h2>
-              <div className="absolute bottom-0 w-full h-full bg-linear-to-t from-[#F9F9F7] dark:from-[#0A0A0A] via-transparent to-transparent" />
+              <div className="absolute bottom-0 w-full h-full bg-gradient-to-t from-[#ffffff] dark:from-[#0A0A0A] via-transparent to-transparent" />
             </div>
           </div>
         </footer>
@@ -457,12 +468,19 @@ const Landing: React.FC = () => {
                   <p className="text-sm sm:text-base text-neutral-500 mb-6 sm:mb-8 max-w-xs mx-auto font-medium">Access your digital vault and manage your IP securely.</p>
                   
                   <button
-                    onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                    onClick={() => {
+                      alert("In production, this triggers: signIn('google', { callbackUrl: '/dashboard' })");
+                      setLoginModal(false);
+                    }}
                     className="cursor-pointer w-full flex items-center justify-center gap-3 bg-transparent border-2 border-black/20 dark:border-white/20 py-3.5 sm:py-4 rounded-xl font-bold hover:border-black dark:hover:border-white transition-all text-black dark:text-white active:scale-95 text-base sm:text-lg"
                   >
                     <GoogleIcon />
                     Continue with Google
                   </button>
+
+                  <p className="text-[10px] text-neutral-400 mt-6 font-bold tracking-[0.2em] uppercase">
+                    Secured via NextAuth
+                  </p>
                 </div>
               </motion.div>
             </div>
