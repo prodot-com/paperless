@@ -46,7 +46,9 @@ export default function FileViewer() {
   const [loading, setLoading] = useState(true);
   const [darkBg, setDarkBg] = useState(true);
 
-  const isMobile = typeof window !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isMobile =
+    typeof window !== "undefined" &&
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   useEffect(() => {
     if (!id) return;
@@ -77,43 +79,38 @@ export default function FileViewer() {
   // };
 
   const getCategory = (mime?: string) => {
-  if (!mime) return "unknown";
+    if (!mime) return "unknown";
 
-  const m = mime.toLowerCase();
+    const m = mime.toLowerCase();
 
-  if (m.startsWith("image/")) return "image";
+    if (m.startsWith("image/")) return "image";
 
-  if (m === "application/pdf") return "pdf";
+    if (m === "application/pdf") return "pdf";
 
-  if (m === "text/plain") return "text";
+    if (m === "text/plain") return "text";
 
-  if (
-    m.includes("word") ||
-    m.includes("officedocument.wordprocessingml")
-  )
-    return "doc";
+    if (m.includes("word") || m.includes("officedocument.wordprocessingml"))
+      return "doc";
 
-  if (
-    m.includes("sheet") ||
-    m.includes("excel") ||
-    m.includes("spreadsheetml")
-  )
-    return "xlsx";
+    if (
+      m.includes("sheet") ||
+      m.includes("excel") ||
+      m.includes("spreadsheetml")
+    )
+      return "xlsx";
 
-  if (
-    m.includes("presentation") ||
-    m.includes("powerpoint")
-  )
-    return "ppt";
+    if (m.includes("presentation") || m.includes("powerpoint")) return "ppt";
 
-  return "unknown";
-};
+    return "unknown";
+  };
 
   const category = getCategory(data?.fileType);
 
   const handleDownload = async () => {
     try {
-      const res = await fetch(`/api/upload/${id}/download?token=${token || ""}`);
+      const res = await fetch(
+        `/api/upload/${id}/download?token=${token || ""}`,
+      );
       const { url } = await res.json();
       const link = document.createElement("a");
       link.href = url;
@@ -121,41 +118,66 @@ export default function FileViewer() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  if (loading) return (
-    <div className="h-screen bg-[#FDFDFD] dark:bg-[#050505] flex flex-col items-center justify-center">
-      <div className="relative flex items-center justify-center">
-        <Loader2 className="animate-spin text-blue-600 absolute" size={60} strokeWidth={1} />
-        <Logo className="w-8 h-8 opacity-80" />
+  if (loading)
+    return (
+      <div className="h-screen bg-[#FDFDFD] dark:bg-[#050505] flex flex-col items-center justify-center">
+        <div className="relative flex items-center justify-center">
+          <Loader2
+            className="animate-spin text-blue-600 absolute"
+            size={60}
+            strokeWidth={1}
+          />
+          <Logo className="w-8 h-8 opacity-80" />
+        </div>
+        <p className="mt-8 font-serif italic text-zinc-500 animate-pulse tracking-wide">
+          Accessing Secure Vault...
+        </p>
       </div>
-      <p className="mt-8 font-serif italic text-zinc-500 animate-pulse tracking-wide">Accessing Secure Vault...</p>
-    </div>
-  );
+    );
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFDFD] dark:bg-[#050505] text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
-      
       <header className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white/70 dark:bg-[#050505]/70 backdrop-blur-xl">
         <div className="flex items-center gap-4">
           {showBack && (
-            <button onClick={() => router.back()} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-all">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-all"
+            >
               <ArrowLeft size={20} />
             </button>
           )}
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => session ? router.push("/dashboard") : router.push("/")}>
+          <div
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() =>
+              session ? router.push("/dashboard") : router.push("/")
+            }
+          >
             <Logo className="w-8 h-8 group-hover:scale-110 transition-transform" />
-            <span className="font-serif italic font-bold text-2xl tracking-tight">paperless</span>
+            <span className="font-serif italic font-bold text-2xl tracking-tight">
+              paperless
+            </span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-zinc-200 dark:border-zinc-800 rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all">
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-zinc-200 dark:border-zinc-800 rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+          >
             <Download size={16} />
             <span className="hidden md:block">Download</span>
           </button>
-          <a href={data?.url} target="_blank" className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 text-white dark:bg-white dark:text-black rounded-full hover:opacity-90 transition-all">
+          <a
+            href={data?.url}
+            target="_blank"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 text-white dark:bg-white dark:text-black rounded-full hover:opacity-90 transition-all"
+          >
             <Maximize2 size={16} />
             <span className="hidden md:block">Full View</span>
           </a>
@@ -164,27 +186,49 @@ export default function FileViewer() {
 
       <main className="flex-1 relative flex items-center justify-center overflow-hidden p-4 md:p-5">
         <AnimatePresence mode="wait">
-          <motion.div 
+          <motion.div
             key={id}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="relative w-full max-w-6xl h-full min-h-[60vh] md:min-h-[80vh] bg-white dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex items-center justify-center"
           >
             {category === "image" && (
-              <div className={`w-full h-full transition-colors duration-500 flex items-center justify-center ${darkBg ? "bg-[#0c0c0c]" : "bg-zinc-100"}`}>
+              <div
+                className={`w-full h-full transition-colors duration-500 flex items-center justify-center ${darkBg ? "bg-[#0c0c0c]" : "bg-zinc-100"}`}
+              >
                 <TransformWrapper initialScale={1} minScale={1} maxScale={8}>
                   {({ zoomIn, zoomOut, resetTransform }) => (
                     <>
-                      <TransformComponent wrapperClass="!w-full !h-full" contentClass="w-full h-full flex items-center justify-center">
-                        <img src={data?.url} alt={data?.name} className="max-w-full max-h-full object-contain shadow-2xl select-none" draggable={false} />
+                      <TransformComponent
+                        wrapperClass="!w-full !h-full"
+                        contentClass="w-full h-full flex items-center justify-center"
+                      >
+                        <img
+                          src={data?.url}
+                          alt={data?.name}
+                          className="max-w-full max-h-full object-contain shadow-2xl select-none"
+                          draggable={false}
+                        />
                       </TransformComponent>
-                      
+
                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 p-1.5 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-20">
-                        <ControlBtn onClick={() => zoomIn()} icon={<ZoomIn size={18} />} />
-                        <ControlBtn onClick={() => zoomOut()} icon={<ZoomOut size={18} />} />
-                        <ControlBtn onClick={() => resetTransform()} icon={<RotateCcw size={18} />} />
+                        <ControlBtn
+                          onClick={() => zoomIn()}
+                          icon={<ZoomIn size={18} />}
+                        />
+                        <ControlBtn
+                          onClick={() => zoomOut()}
+                          icon={<ZoomOut size={18} />}
+                        />
+                        <ControlBtn
+                          onClick={() => resetTransform()}
+                          icon={<RotateCcw size={18} />}
+                        />
                         <div className="w-[1px] h-4 bg-white/20 mx-1" />
-                        <ControlBtn onClick={() => setDarkBg(!darkBg)} icon={darkBg ? <Sun size={18} /> : <Moon size={18} />} />
+                        <ControlBtn
+                          onClick={() => setDarkBg(!darkBg)}
+                          icon={darkBg ? <Sun size={18} /> : <Moon size={18} />}
+                        />
                       </div>
                     </>
                   )}
@@ -192,7 +236,7 @@ export default function FileViewer() {
               </div>
             )}
 
-          {/* {category === "pdf" && (
+            {/* {category === "pdf" && (
             isMobile ? (
               <div className="flex flex-col items-center gap-6 py-20 text-center">
                 <p className="text-sm text-neutral-500">
@@ -222,14 +266,13 @@ export default function FileViewer() {
             )
           )} */}
 
-          {category === "pdf" && (
-  <iframe
-    src={data?.url}
-    className="w-full min-h-[85vh] bg-white"
-    title={data?.name}
-  />
-)}
-
+            {category === "pdf" && (
+              <iframe
+                src={data?.url}
+                className="w-full min-h-[85vh] bg-white"
+                title={data?.name}
+              />
+            )}
 
             {category === "text" && <TextViewer url={data?.url || ""} />}
 
@@ -248,12 +291,12 @@ export default function FileViewer() {
               </div>
             )} */}
             {["doc", "ppt", "xlsx"].includes(category) && (
-  <iframe
-    src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(data?.url || "")}`}
-    className="w-full min-h-[85vh] bg-white"
-    title={data?.name}
-  />
-)}
+              <iframe
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(data?.url || "")}`}
+                className="w-full min-h-[85vh] bg-white"
+                title={data?.name}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -273,10 +316,12 @@ export default function FileViewer() {
           </div>
 
           <div className="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center gap-3 text-xs font-mono text-zinc-500">
-             <Info size={14} />
-             <span className="truncate max-w-[200px]">{data?.name}</span>
-             <span className="opacity-30">|</span>
-             <span className="uppercase">{data?.fileType?.split('/')[1] || category}</span>
+            <Info size={14} />
+            <span className="truncate max-w-[200px]">{data?.name}</span>
+            <span className="opacity-30">|</span>
+            <span className="uppercase">
+              {data?.fileType?.split("/")[1] || category}
+            </span>
           </div>
 
           <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-400">
@@ -288,9 +333,18 @@ export default function FileViewer() {
   );
 }
 
-function ControlBtn({ onClick, icon }: { onClick: () => void, icon: React.ReactNode }) {
+function ControlBtn({
+  onClick,
+  icon,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+}) {
   return (
-    <button onClick={onClick} className="p-2.5 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all">
+    <button
+      onClick={onClick}
+      className="p-2.5 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+    >
       {icon}
     </button>
   );
@@ -299,7 +353,10 @@ function ControlBtn({ onClick, icon }: { onClick: () => void, icon: React.ReactN
 function TextViewer({ url }: { url: string }) {
   const [content, setContent] = useState("");
   useEffect(() => {
-    fetch(url).then(res => res.text()).then(setContent).catch(() => setContent("Error loading text content."));
+    fetch(url)
+      .then((res) => res.text())
+      .then(setContent)
+      .catch(() => setContent("Error loading text content."));
   }, [url]);
 
   return (
