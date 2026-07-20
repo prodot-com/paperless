@@ -21,6 +21,8 @@ model User {
   files File[]
   folders Folder[]
   ShareToken ShareToken[]
+
+  isVaultPublic Boolean @default(false)
 }
 
 model Account {

@@ -39,8 +39,10 @@ export default function FileViewer() {
 
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const token = searchParams.get("token");
+  const isPublic = searchParams.get("public") === "true";
   const from = searchParams.get("from");
-  const showBack = from === "upload";
+  
+  const showBack = from === "upload" || isPublic;
 
   const [data, setData] = useState<FileResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,13 @@ export default function FileViewer() {
     if (!id) return;
     const fetchFile = async () => {
       try {
-        const res = await fetch(`/api/upload/${id}/view?token=${token || ""}`);
+        const isPublic = searchParams.get("public") === "true";
+
+        const endpoint = isPublic
+          ? `/api/public/file/${id}/view`
+          : `/api/upload/${id}/view?token=${token || ""}`;
+
+        const res = await fetch(endpoint);
         const json = await res.json();
         if (!res.ok) throw new Error();
         setData(json);
@@ -108,9 +116,13 @@ export default function FileViewer() {
 
   const handleDownload = async () => {
     try {
-      const res = await fetch(
-        `/api/upload/${id}/download?token=${token || ""}`,
-      );
+      const isPublic = searchParams.get("public") === "true";
+
+      const endpoint = isPublic
+        ? `/api/public/file/${id}/download`
+        : `/api/upload/${id}/download?token=${token || ""}`;
+
+      const res = await fetch(endpoint);
       const { url } = await res.json();
       const link = document.createElement("a");
       link.href = url;

@@ -20,8 +20,21 @@ export async function GET() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    return NextResponse.json([], { status: 401 });
+    return NextResponse.json(
+      { files: [], isVaultPublic: false },
+      { status: 401 },
+    );
   }
+
+  // Fetch user to get vault visibility
+  const user = await prisma.user.findUnique({
+    where: {
+      id: session.user.id,
+    },
+    select: {
+      isVaultPublic: true,
+    },
+  });
 
   const files = await prisma.file.findMany({
     where: {
@@ -40,9 +53,11 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json(files);
+  return NextResponse.json({
+    files,
+    isVaultPublic: user?.isVaultPublic ?? false,
+  });
 }
-
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);

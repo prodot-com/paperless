@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Upload,
   File,
@@ -15,7 +15,7 @@ import {
   Loader2,
   Folder,
   FolderPlus,
-  FolderOpen
+  FolderOpen,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -48,20 +48,27 @@ type FolderItem = {
 export default function UploadPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Public View State
+  const publicUserId = searchParams.get("user");
+  const isPublicView = !!publicUserId;
+  const [ownerName, setOwnerName] = useState<string>("");
+  const [isVaultPublic, setIsVaultPublic] = useState(false);
 
   const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  
+
   const [folders, setFolders] = useState<FolderItem[]>([]);
   const [loadingFolders, setLoadingFolders] = useState(true);
   const [folderModalOpen, setFolderModalOpen] = useState(false);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
-  
+
   const [modal, setModal] = useState<{
     isOpen: boolean;
-    type: "error" | "confirm" | "rename" | "share";
+    type: "error" | "confirm" | "rename" | "share" | "folder";
     title: string;
     message: string;
     file?: FileItem;
@@ -73,6 +80,7 @@ export default function UploadPage() {
   });
 
   const fetchFolders = async () => {
+    if (isPublicView) return; // Prevent fetching private folders in public view
     try {
       setLoadingFolders(true);
       const res = await fetch("/api/folders");
@@ -87,7 +95,7 @@ export default function UploadPage() {
   };
 
   const handleCreateFolder = async (name?: string) => {
-    if (!name?.trim()) return;
+    if (!name?.trim() || isPublicView) return;
     try {
       const res = await fetch("/api/folders", {
         method: "POST",
@@ -104,26 +112,74 @@ export default function UploadPage() {
   };
 
   useEffect(() => {
-    fetchFolders();
-  }, []);
-
-  useEffect(() => {
-    if (status === "unauthenticated") router.push("/login");
-  }, [status, router]);
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetch("/api/upload")
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to load files");
-          return res.json();
-        })
-        .then(setFiles)
-        .catch(() => {
-          toast.error("Unable to load files");
-        });
+    if (status === "unauthenticated" && !isPublicView) {
+      router.push("/login");
     }
-  }, [status]);
+  }, [status, router, isPublicView]);
+
+  useEffect(() => {
+    const fetchVaultData = async () => {
+      if (isPublicView) {
+        try {
+          setLoadingFolders(true);
+          const res = await fetch(`/api/public/${publicUserId}`);
+          if (!res.ok) throw new Error("Failed to load public vault");
+          const data = await res.json();
+
+          setFolders(data.folders || []);
+          setFiles(data.files || []);
+          setOwnerName(data.owner?.name || data.owner?.email || "User");
+        } catch (err) {
+          toast.error("Unable to load public vault");
+        } finally {
+          setLoadingFolders(false);
+        }
+      } else if (status === "authenticated") {
+        fetchFolders();
+        fetch("/api/upload")
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to load files");
+            return res.json();
+          })
+          .then((data) => {
+            setFiles(data.files);
+            setIsVaultPublic(data.isVaultPublic);
+          })
+          .catch(() => {
+            toast.error("Unable to load files");
+          });
+      }
+    };
+
+    if (isPublicView || status === "authenticated") {
+      fetchVaultData();
+    }
+  }, [status, isPublicView, publicUserId]);
+
+  const handleTogglePublic = async () => {
+    try {
+      const res = await fetch("/api/public/toggle", { method: "PATCH" });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setIsVaultPublic(data.isVaultPublic);
+      toast.success(
+        data.isVaultPublic ? "Vault is now public" : "Vault is now private",
+      );
+    } catch {
+      toast.error("Failed to update vault visibility");
+    }
+  };
+
+  const handleShareVault = () => {
+    const userId = session?.user?.id;
+    if (!userId) {
+      toast.error("Unable to identify user ID for sharing");
+      return;
+    }
+    const url = `${window.location.origin}/vault/${userId}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Vault link copied successfully.");
+  };
 
   function formatSize(bytes: number) {
     const sizes = ["B", "KB", "MB", "GB"];
@@ -146,7 +202,7 @@ export default function UploadPage() {
   }
 
   async function handleFiles(selectedFiles: File[]) {
-    if (loading || !selectedFiles.length) return;
+    if (loading || !selectedFiles.length || isPublicView) return;
 
     const validFiles: File[] = [];
     for (const file of selectedFiles) {
@@ -200,8 +256,11 @@ export default function UploadPage() {
       }
 
       const refreshed = await fetch("/api/upload");
+
       if (refreshed.ok) {
-        setFiles(await refreshed.json());
+        const data = await refreshed.json();
+        setFiles(data.files);
+        setIsVaultPublic(data.isVaultPublic);
       }
     } catch {
       toast.error("Upload failed");
@@ -210,13 +269,14 @@ export default function UploadPage() {
     }
   }
 
-  // Group files by folder for organized rendering
   const groupedFiles = useMemo(() => {
     const rootFiles = files.filter((f) => !f.folderId);
-    const folderGroups = folders.map((folder) => ({
-      ...folder,
-      files: files.filter((f) => f.folderId === folder.id),
-    })).filter((group) => group.files.length > 0);
+    const folderGroups = folders
+      .map((folder) => ({
+        ...folder,
+        files: files.filter((f) => f.folderId === folder.id),
+      }))
+      .filter((group) => group.files.length > 0);
 
     return { rootFiles, folderGroups };
   }, [files, folders]);
@@ -239,21 +299,54 @@ export default function UploadPage() {
               <span>Digital Asset Manager</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-light tracking-tight italic font-serif text-neutral-900 dark:text-white">
-              File Vault
+              {isPublicView ? `${ownerName}'s File Vault` : "My File Vault"}
             </h1>
-            <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
-              Logged in as <span className="font-medium text-neutral-800 dark:text-neutral-200 block sm:inline">{session?.user?.email}</span>
-            </p>
+            {!isPublicView && (
+              <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
+                Logged in as{" "}
+                <span className="font-medium text-neutral-800 dark:text-neutral-200 block sm:inline">
+                  {session?.user?.email}
+                </span>
+              </p>
+            )}
           </div>
+
+          {!isPublicView && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-4 md:mt-0">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                  🌍 Public Vault
+                </span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={isVaultPublic}
+                    onChange={handleTogglePublic}
+                  />
+                  <div className="w-10 h-6 bg-neutral-200 dark:bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+                </div>
+              </label>
+
+              <button
+                onClick={handleShareVault}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest hover:opacity-80 transition-all shadow-xl active:scale-95"
+              >
+                <Share2 size={14} />
+                Share Vault
+              </button>
+            </div>
+          )}
         </header>
 
         {/* Smooth Folder Selection Ribbon */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Target Directory</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+              {isPublicView ? "Browsing Directory" : "Target Directory"}
+            </h2>
           </div>
           <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar snap-x">
-            {/* Root Option */}
             <button
               onClick={() => setSelectedFolderId(null)}
               className={`shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all ${
@@ -267,7 +360,10 @@ export default function UploadPage() {
             </button>
 
             {loadingFolders ? (
-              <Loader2 size={16} className="animate-spin text-neutral-400 mx-4" />
+              <Loader2
+                size={16}
+                className="animate-spin text-neutral-400 mx-4"
+              />
             ) : (
               folders.map((folder) => (
                 <button
@@ -279,103 +375,140 @@ export default function UploadPage() {
                       : "bg-white dark:bg-neutral-900 text-neutral-500 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm"
                   }`}
                 >
-                  {selectedFolderId === folder.id ? <FolderOpen size={16} /> : <Folder size={16} />}
+                  {selectedFolderId === folder.id ? (
+                    <FolderOpen size={16} />
+                  ) : (
+                    <Folder size={16} />
+                  )}
                   {folder.name}
                 </button>
               ))
             )}
 
-            {/* Create Folder Button */}
-            <button
-              onClick={() => setFolderModalOpen(true)}
-              className="shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest bg-neutral-900 dark:bg-white text-white dark:text-black hover:opacity-80 transition-all shadow-md active:scale-95 ml-2"
-            >
-              <FolderPlus size={16} />
-              New Folder
-            </button>
+            {!isPublicView && (
+              <button
+                onClick={() => setFolderModalOpen(true)}
+                className="shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest bg-neutral-900 dark:bg-white text-white dark:text-black hover:opacity-80 transition-all shadow-md active:scale-95 ml-2"
+              >
+                <FolderPlus size={16} />
+                New Folder
+              </button>
+            )}
           </div>
         </div>
 
         {/* Upload Zone */}
-        <div className="relative w-full mb-16">
-          <AnimatePresence mode="wait">
-            {loading ? (
-               <motion.div
-                 key="uploading"
-                 initial={{ opacity: 0, scale: 0.98 }}
-                 animate={{ opacity: 1, scale: 1 }}
-                 exit={{ opacity: 0 }}
-                 className="relative rounded-[2.5rem] p-14 flex flex-col items-center justify-center bg-white/70 dark:bg-[#0f0f0f]/70 backdrop-blur-2xl border border-neutral-200/60 dark:border-neutral-800/60 shadow-xl overflow-hidden"
-               >
-                 <div className="absolute inset-0 pointer-events-none">
-                   <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-150 h-150 bg-blue-500/10 blur-[120px] rounded-full" />
-                 </div>
-                 <div className="relative z-10 flex flex-col items-center w-full max-w-sm">
-                   <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} className="relative mb-8">
-                     <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full opacity-60" />
-                     <div className="relative p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm text-blue-500">
-                       <Upload size={30} />
-                     </div>
-                   </motion.div>
-                   <motion.h3 className="text-xl font-medium tracking-tight font-serif italic text-neutral-900 dark:text-white mb-2" animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 2, repeat: Infinity }}>
-                     Uploading Securely
-                   </motion.h3>
-                   <p className="text-[11px] uppercase tracking-[0.25em] font-semibold text-blue-500/70 mb-8">Encrypting & Syncing</p>
-                   <div className="w-full h-1 bg-neutral-200/60 dark:bg-neutral-800 rounded-full overflow-hidden">
-                     <motion.div initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: 3.5, ease: "easeInOut" }} className="relative h-full bg-linear-to-r from-blue-500 to-indigo-500" />
-                   </div>
-                 </div>
-               </motion.div>
-            ) : (
-              <motion.div
-                key="idle"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setIsDragging(false);
-                  if (e.dataTransfer.files.length > 0) handleFiles(Array.from(e.dataTransfer.files));
-                }}
-                className={`min-h-[280px] relative group border-2 border-dashed rounded-[2.5rem] p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] ${
-                  isDragging
-                    ? "border-blue-500 bg-blue-50/30 dark:bg-blue-900/10 scale-[0.99] shadow-2xl shadow-blue-500/5"
-                    : "border-neutral-200 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none hover:border-neutral-300 dark:hover:border-neutral-700"
-                }`}
-              >
+        {!isPublicView && (
+          <div className="relative w-full mb-16">
+            <AnimatePresence mode="wait">
+              {loading ? (
                 <motion.div
-                  animate={isDragging ? { scale: 1.2, rotate: 5 } : { scale: 1 }}
-                  className={`p-5 rounded-[1.8rem] mb-5 transition-colors shadow-sm ${
-                    isDragging ? "bg-blue-500 text-white" : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400 group-hover:text-blue-500"
+                  key="uploading"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="relative rounded-[2.5rem] p-14 flex flex-col items-center justify-center bg-white/70 dark:bg-[#0f0f0f]/70 backdrop-blur-2xl border border-neutral-200/60 dark:border-neutral-800/60 shadow-xl overflow-hidden"
+                >
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-150 h-150 bg-blue-500/10 blur-[120px] rounded-full" />
+                  </div>
+                  <div className="relative z-10 flex flex-col items-center w-full max-w-sm">
+                    <motion.div
+                      animate={{ y: [0, -6, 0] }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="relative mb-8"
+                    >
+                      <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full opacity-60" />
+                      <div className="relative p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm text-blue-500">
+                        <Upload size={30} />
+                      </div>
+                    </motion.div>
+                    <motion.h3
+                      className="text-xl font-medium tracking-tight font-serif italic text-neutral-900 dark:text-white mb-2"
+                      animate={{ opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      Uploading Securely
+                    </motion.h3>
+                    <p className="text-[11px] uppercase tracking-[0.25em] font-semibold text-blue-500/70 mb-8">
+                      Encrypting & Syncing
+                    </p>
+                    <div className="w-full h-1 bg-neutral-200/60 dark:bg-neutral-800 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: "0%" }}
+                        animate={{ width: "100%" }}
+                        transition={{ duration: 3.5, ease: "easeInOut" }}
+                        className="relative h-full bg-linear-to-r from-blue-500 to-indigo-500"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="idle"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    if (e.dataTransfer.files.length > 0)
+                      handleFiles(Array.from(e.dataTransfer.files));
+                  }}
+                  className={`min-h-[280px] relative group border-2 border-dashed rounded-[2.5rem] p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] ${
+                    isDragging
+                      ? "border-blue-500 bg-blue-50/30 dark:bg-blue-900/10 scale-[0.99] shadow-2xl shadow-blue-500/5"
+                      : "border-neutral-200 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none hover:border-neutral-300 dark:hover:border-neutral-700"
                   }`}
                 >
-                  <Upload size={32} />
+                  <motion.div
+                    animate={
+                      isDragging ? { scale: 1.2, rotate: 5 } : { scale: 1 }
+                    }
+                    className={`p-5 rounded-[1.8rem] mb-5 transition-colors shadow-sm ${
+                      isDragging
+                        ? "bg-blue-500 text-white"
+                        : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400 group-hover:text-blue-500"
+                    }`}
+                  >
+                    <Upload size={32} />
+                  </motion.div>
+                  <h3 className="text-lg font-medium mb-1 tracking-tight">
+                    {isDragging ? "Drop to secure" : "Drop file to store"}
+                  </h3>
+                  <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 mb-8 text-center max-w-xs">
+                    Targeting:{" "}
+                    {selectedFolderId
+                      ? folders.find((f) => f.id === selectedFolderId)?.name
+                      : "Main Vault"}
+                  </p>
+                  <label className="cursor-pointer bg-black dark:bg-white text-white dark:text-black px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:opacity-80 transition-all active:scale-95 shadow-lg shadow-black/5 dark:shadow-none">
+                    Browse File
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.pptx,.txt,.jpg,.jpeg,.png,.webp,.gif,.zip"
+                      onChange={(e) => {
+                        if (!e.target.files) return;
+                        handleFiles(Array.from(e.target.files));
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
                 </motion.div>
-                <h3 className="text-lg font-medium mb-1 tracking-tight">
-                  {isDragging ? "Drop to secure" : "Drop file to store"}
-                </h3>
-                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 mb-8 text-center max-w-xs">
-                  Targeting: {selectedFolderId ? folders.find(f => f.id === selectedFolderId)?.name : "Main Vault"}
-                </p>
-                <label className="cursor-pointer bg-black dark:bg-white text-white dark:text-black px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:opacity-80 transition-all active:scale-95 shadow-lg shadow-black/5 dark:shadow-none">
-                  Browse File
-                  <input
-                    type="file"
-                    multiple
-                    className="hidden"
-                    accept=".pdf,.doc,.docx,.pptx,.txt,.jpg,.jpeg,.png,.webp,.gif,.zip"
-                    onChange={(e) => {
-                      if (!e.target.files) return;
-                      handleFiles(Array.from(e.target.files));
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Grouped Assets List */}
         <div>
@@ -406,7 +539,9 @@ export default function UploadPage() {
                   </span>
                 </div>
                 <div className="space-y-3">
-                  {group.files.map((f) => <FileRow key={f.id} file={f} />)}
+                  {group.files.map((f) => (
+                    <FileRow key={f.id} file={f} />
+                  ))}
                 </div>
               </div>
             ))}
@@ -421,7 +556,9 @@ export default function UploadPage() {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {groupedFiles.rootFiles.map((f) => <FileRow key={f.id} file={f} />)}
+                  {groupedFiles.rootFiles.map((f) => (
+                    <FileRow key={f.id} file={f} />
+                  ))}
                 </div>
               </div>
             )}
@@ -450,7 +587,6 @@ export default function UploadPage() {
     </div>
   );
 
-  // Extracted Component for File Rows to keep code clean
   function FileRow({ file: f }: { file: FileItem }) {
     return (
       <motion.div
@@ -469,31 +605,55 @@ export default function UploadPage() {
               {f.name}
             </p>
             <p className="text-[10px] text-neutral-400 uppercase tracking-tighter font-bold">
-              {formatSize(f.size)} • {new Date(f.createdAt).toLocaleDateString()}
+              {formatSize(f.size)} •{" "}
+              {new Date(f.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
 
         <div className="flex items-center justify-between sm:justify-end gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-neutral-50 dark:border-neutral-900">
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-            <FileActionBtn icon={<Eye size={16} />} onClick={() => handleAction(f.id, "view")} label="View" />
-            <FileActionBtn icon={<Type size={16} />} onClick={() => handleRename(f)} label="Rename" />
-            <FileActionBtn icon={<Download size={16} />} onClick={() => handleAction(f.id, "download")} label="Save" />
-            <FileActionBtn icon={<Share2 size={16} />} onClick={() => handleShare(f.id)} label="Share" />
+            <FileActionBtn
+              icon={<Eye size={16} />}
+              onClick={() => handleAction(f.id, "view")}
+              label="View"
+            />
+            {!isPublicView && (
+              <FileActionBtn
+                icon={<Type size={16} />}
+                onClick={() => handleRename(f)}
+                label="Rename"
+              />
+            )}
+            <FileActionBtn
+              icon={<Download size={16} />}
+              onClick={() => handleAction(f.id, "download")}
+              label="Save"
+            />
+            {!isPublicView && (
+              <FileActionBtn
+                icon={<Share2 size={16} />}
+                onClick={() => handleShare(f.id)}
+                label="Share"
+              />
+            )}
           </div>
-          <div className="w-px h-4 bg-neutral-100 dark:bg-neutral-800 mx-1 md:mx-2 shrink-0" />
-          <button
-            onClick={() => handleDelete(f)}
-            className="p-2 cursor-pointer text-neutral-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all shrink-0"
-          >
-            <Trash2 size={16} />
-          </button>
+          {!isPublicView && (
+            <>
+              <div className="w-px h-4 bg-neutral-100 dark:bg-neutral-800 mx-1 md:mx-2 shrink-0" />
+              <button
+                onClick={() => handleDelete(f)}
+                className="p-2 cursor-pointer text-neutral-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all shrink-0"
+              >
+                <Trash2 size={16} />
+              </button>
+            </>
+          )}
         </div>
       </motion.div>
     );
   }
 
-  // Action Handlers
   async function handleAction(id: string, action: string) {
     try {
       const res = await fetch(`/api/upload/${id}/${action}`);
@@ -514,16 +674,34 @@ export default function UploadPage() {
   }
 
   function handleRename(f: FileItem) {
-    setModal({ isOpen: true, type: "rename", title: "Rename File", message: "Enter a new name for this file.", file: f });
+    setModal({
+      isOpen: true,
+      type: "rename",
+      title: "Rename File",
+      message: "Enter a new name for this file.",
+      file: f,
+    });
   }
 
   function handleShare(id: string) {
     const file = files.find((f) => f.id === id);
-    setModal({ isOpen: true, type: "share", title: "Share File", message: "Select expiry duration", file });
+    setModal({
+      isOpen: true,
+      type: "share",
+      title: "Share File",
+      message: "Select expiry duration",
+      file,
+    });
   }
 
   function handleDelete(f: FileItem) {
-    setModal({ isOpen: true, type: "confirm", title: "Delete File", message: "Are you sure you want to delete this file permanently?", file: f });
+    setModal({
+      isOpen: true,
+      type: "confirm",
+      title: "Delete File",
+      message: "Are you sure you want to delete this file permanently?",
+      file: f,
+    });
   }
 
   async function handleModalConfirm(value?: string) {
@@ -534,7 +712,11 @@ export default function UploadPage() {
         const res = await fetch("/api/upload/share", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "file", resourceId: modal.file.id, expiresInHours }),
+          body: JSON.stringify({
+            type: "file",
+            resourceId: modal.file.id,
+            expiresInHours,
+          }),
         });
         if (!res.ok) throw new Error("Share failed");
         const { url } = await res.json();
@@ -552,11 +734,17 @@ export default function UploadPage() {
           body: JSON.stringify({ name: value.trim() }),
         });
         if (!res.ok) throw new Error();
-        setFiles((prev) => prev.map((x) => (x.id === modal.file?.id ? { ...x, name: value.trim() } : x)));
+        setFiles((prev) =>
+          prev.map((x) =>
+            x.id === modal.file?.id ? { ...x, name: value.trim() } : x,
+          ),
+        );
         toast.success("File renamed successfully");
       }
       if (modal.type === "confirm") {
-        const res = await fetch(`/api/upload/${modal.file.id}`, { method: "DELETE" });
+        const res = await fetch(`/api/upload/${modal.file.id}`, {
+          method: "DELETE",
+        });
         if (!res.ok) throw new Error();
         setFiles((prev) => prev.filter((x) => x.id !== modal.file?.id));
         toast.success("File deleted successfully");
@@ -569,7 +757,15 @@ export default function UploadPage() {
   }
 }
 
-function FileActionBtn({ icon, onClick, label }: { icon: any; onClick: () => void; label: string }) {
+function FileActionBtn({
+  icon,
+  onClick,
+  label,
+}: {
+  icon: any;
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       onClick={onClick}
