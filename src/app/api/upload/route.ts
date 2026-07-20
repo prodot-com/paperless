@@ -24,13 +24,24 @@ export async function GET() {
   }
 
   const files = await prisma.file.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
+    where: {
+      userId: session.user.id,
+    },
+    include: {
+      folder: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
   return NextResponse.json(files);
 }
-
 
 export async function POST(req: Request) {
   try {
@@ -41,8 +52,10 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData();
-    console.log(formData)
+    console.log(formData);
     const file = formData.get("file") as File | null;
+    const folderId = formData.get("folderId")?.toString() || null;
+    console.log(folderId);
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -51,14 +64,14 @@ export async function POST(req: Request) {
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         { error: "Unsupported file type" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
         { error: "File exceeds size limit" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -73,7 +86,7 @@ export async function POST(req: Request) {
         Key: key,
         Body: buffer,
         ContentType: file.type,
-      })
+      }),
     );
 
     const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
@@ -85,17 +98,13 @@ export async function POST(req: Request) {
         size: file.size,
         type: file.type,
         userId: session.user.id,
+        folderId,
       },
     });
 
     return NextResponse.json(saved);
-
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json(
-      { error: "Upload failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
-
