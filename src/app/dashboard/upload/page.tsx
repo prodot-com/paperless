@@ -322,7 +322,7 @@ export default function UploadPage() {
               <div className="flex items-center gap-3 px-3 py-1.5">
                 <button
                   onClick={handleTogglePublic}
-                  className={`relative flex items-center w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-1 dark:focus:ring-offset-neutral-900 ${
+                  className={`relative flex items-center w-11 h-6 rounded-full transition-colors duration-300  ${
                     isVaultPublic
                       ? "bg-blue-500"
                       : "bg-neutral-300 dark:bg-neutral-700"
