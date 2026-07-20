@@ -16,6 +16,8 @@ import {
   Folder,
   FolderPlus,
   FolderOpen,
+  Globe,
+  Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -80,7 +82,7 @@ export default function UploadPage() {
   });
 
   const fetchFolders = async () => {
-    if (isPublicView) return; // Prevent fetching private folders in public view
+    if (isPublicView) return;
     try {
       setLoadingFolders(true);
       const res = await fetch("/api/folders");
@@ -158,6 +160,8 @@ export default function UploadPage() {
 
   const handleTogglePublic = async () => {
     try {
+      // Optimistic update for better UX
+      setIsVaultPublic(!isVaultPublic);
       const res = await fetch("/api/public/toggle", { method: "PATCH" });
       if (!res.ok) throw new Error();
       const data = await res.json();
@@ -166,6 +170,7 @@ export default function UploadPage() {
         data.isVaultPublic ? "Vault is now public" : "Vault is now private",
       );
     } catch {
+      setIsVaultPublic(!isVaultPublic); // Revert on failure
       toast.error("Failed to update vault visibility");
     }
   };
@@ -292,9 +297,9 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0a0a] transition-colors p-4 md:p-12">
       <div className="max-w-5xl mx-auto">
-        <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-neutral-100 dark:border-neutral-900 pb-8">
           <div>
-            <div className="flex items-center gap-2 text-blue-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
+            <div className="flex items-center gap-2 text-blue-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
               <HardDrive size={14} />
               <span>Digital Asset Manager</span>
             </div>
@@ -302,9 +307,9 @@ export default function UploadPage() {
               {isPublicView ? `${ownerName}'s File Vault` : "My File Vault"}
             </h1>
             {!isPublicView && (
-              <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm">
+              <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm flex items-center gap-2">
                 Logged in as{" "}
-                <span className="font-medium text-neutral-800 dark:text-neutral-200 block sm:inline">
+                <span className="font-medium text-neutral-800 dark:text-neutral-200">
                   {session?.user?.email}
                 </span>
               </p>
@@ -312,92 +317,160 @@ export default function UploadPage() {
           </div>
 
           {!isPublicView && (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-4 md:mt-0">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">
-                  🌍 Public Vault
-                </span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={isVaultPublic}
-                    onChange={handleTogglePublic}
+            <div className="flex items-center gap-4 mt-2 md:mt-0 bg-neutral-50/50 dark:bg-neutral-900/30 p-2 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 backdrop-blur-sm">
+              {/* Refined Public Toggle */}
+              <div className="flex items-center gap-3 px-3 py-1.5">
+                <button
+                  onClick={handleTogglePublic}
+                  className={`relative flex items-center w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-1 dark:focus:ring-offset-neutral-900 ${
+                    isVaultPublic
+                      ? "bg-blue-500"
+                      : "bg-neutral-300 dark:bg-neutral-700"
+                  }`}
+                >
+                  <span
+                    className={`absolute left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-sm ${
+                      isVaultPublic ? "translate-x-5" : "translate-x-0"
+                    }`}
                   />
-                  <div className="w-10 h-6 bg-neutral-200 dark:bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+                </button>
+                <div className="flex items-center gap-1.5 w-20">
+                  {isVaultPublic ? (
+                    <Globe size={14} className="text-blue-500" />
+                  ) : (
+                    <Lock
+                      size={14}
+                      className="text-neutral-400 dark:text-neutral-500"
+                    />
+                  )}
+                  <span
+                    className={`text-[11px] font-bold uppercase tracking-wider ${
+                      isVaultPublic
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-neutral-500 dark:text-neutral-400"
+                    }`}
+                  >
+                    {isVaultPublic ? "Public" : "Private"}
+                  </span>
                 </div>
-              </label>
+              </div>
+
+              <div className="w-px h-8 bg-neutral-200 dark:bg-neutral-800" />
 
               <button
                 onClick={handleShareVault}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest hover:opacity-80 transition-all shadow-xl active:scale-95"
+                disabled={!isVaultPublic}
+                title={
+                  !isVaultPublic
+                    ? "Enable Public Vault to generate a share link."
+                    : "Copy public vault link"
+                }
+                className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-widest shadow-sm transition-all active:scale-95 ${
+                  isVaultPublic
+                    ? "bg-white dark:bg-[#111] text-neutral-900 dark:text-white border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 cursor-pointer"
+                    : "bg-neutral-100 dark:bg-neutral-900 text-neutral-400 dark:text-neutral-600 border-neutral-200 dark:border-neutral-800 cursor-not-allowed opacity-60"
+                }`}
               >
-                <Share2 size={14} />
-                Share Vault
+                <Share2
+                  size={14}
+                  className={
+                    isVaultPublic
+                      ? "transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      : ""
+                  }
+                />
+                Share Link
               </button>
             </div>
           )}
         </header>
 
-        {/* Smooth Folder Selection Ribbon */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="mb-8">
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+        .premium-scrollbar::-webkit-scrollbar {
+          height: 4px;
+        }
+
+        .premium-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .premium-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(140,140,140,0.2);
+          border-radius: 999px;
+        }
+
+        .premium-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(140,140,140,0.4);
+        }
+      `,
+            }}
+          />
+          <div className="flex items-center justify-between mb-4 px-1">
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
               {isPublicView ? "Browsing Directory" : "Target Directory"}
             </h2>
-          </div>
-          <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar snap-x">
-            <button
-              onClick={() => setSelectedFolderId(null)}
-              className={`shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all ${
-                selectedFolderId === null
-                  ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 border border-blue-200 dark:border-blue-500/30"
-                  : "bg-white dark:bg-neutral-900 text-neutral-500 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm"
-              }`}
-            >
-              <HardDrive size={16} />
-              Main Vault
-            </button>
-
-            {loadingFolders ? (
-              <Loader2
-                size={16}
-                className="animate-spin text-neutral-400 mx-4"
-              />
-            ) : (
-              folders.map((folder) => (
-                <button
-                  key={folder.id}
-                  onClick={() => setSelectedFolderId(folder.id)}
-                  className={`shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all ${
-                    selectedFolderId === folder.id
-                      ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 border border-blue-200 dark:border-blue-500/30 shadow-md shadow-blue-500/5"
-                      : "bg-white dark:bg-neutral-900 text-neutral-500 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm"
-                  }`}
-                >
-                  {selectedFolderId === folder.id ? (
-                    <FolderOpen size={16} />
-                  ) : (
-                    <Folder size={16} />
-                  )}
-                  {folder.name}
-                </button>
-              ))
-            )}
-
             {!isPublicView && (
               <button
                 onClick={() => setFolderModalOpen(true)}
-                className="shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest bg-neutral-900 dark:bg-white text-white dark:text-black hover:opacity-80 transition-all shadow-md active:scale-95 ml-2"
+                className="text-[11px] font-bold uppercase tracking-wider text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1.5 transition-colors"
               >
-                <FolderPlus size={16} />
+                <FolderPlus size={14} />
                 New Folder
               </button>
             )}
           </div>
+
+          <div className="relative w-full overflow-hidden group">
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#FDFDFD] dark:from-[#0a0a0a] to-transparent z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#FDFDFD] dark:from-[#0a0a0a] to-transparent z-10" />
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-4 pt-1 px-4 -mx-4 premium-scrollbar snap-x">
+              <button
+                onClick={() => setSelectedFolderId(null)}
+                className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
+                  selectedFolderId === null
+                    ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-md"
+                    : "bg-white dark:bg-[#111] text-neutral-500 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm"
+                }`}
+              >
+                <HardDrive size={14} />
+                Main Vault
+              </button>
+
+              {loadingFolders ? (
+                <div className="flex items-center px-4">
+                  <Loader2
+                    size={16}
+                    className="animate-spin text-neutral-300"
+                  />
+                </div>
+              ) : (
+                folders.map((folder) => (
+                  <button
+                    key={folder.id}
+                    onClick={() => setSelectedFolderId(folder.id)}
+                    className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
+                      selectedFolderId === folder.id
+                        ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-md"
+                        : "bg-white dark:bg-[#111] text-neutral-500 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm"
+                    }`}
+                  >
+                    {selectedFolderId === folder.id ? (
+                      <FolderOpen size={14} />
+                    ) : (
+                      <Folder size={14} />
+                    )}
+                    {folder.name}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Upload Zone */}
         {!isPublicView && (
           <div className="relative w-full mb-16">
             <AnimatePresence mode="wait">
@@ -510,8 +583,26 @@ export default function UploadPage() {
           </div>
         )}
 
-        {/* Grouped Assets List */}
         <div>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+    .premium-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .premium-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .premium-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(140, 140, 140, 0.2);
+      border-radius: 10px;
+    }
+    .premium-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(140, 140, 140, 0.4);
+    }
+  `,
+            }}
+          />
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-neutral-400 shrink-0">
               Vault Contents ({files.length})
@@ -526,7 +617,6 @@ export default function UploadPage() {
               </p>
             )}
 
-            {/* Render Folders that have files */}
             {groupedFiles.folderGroups.map((group) => (
               <div key={group.id} className="space-y-4">
                 <div className="flex items-center gap-3 px-2">
@@ -538,7 +628,7 @@ export default function UploadPage() {
                     {group.files.length}
                   </span>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-2 premium-scrollbar scroll-smooth">
                   {group.files.map((f) => (
                     <FileRow key={f.id} file={f} />
                   ))}
