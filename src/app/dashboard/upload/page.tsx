@@ -38,6 +38,9 @@ export default function UploadPage() {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [loadingFolders, setLoadingFolders] = useState(true);
+  const [folderModalOpen, setFolderModalOpen] = useState(false);
   const [modal, setModal] = useState<{
     isOpen: boolean;
     type: "error" | "confirm" | "rename" | "share";
@@ -51,6 +54,64 @@ export default function UploadPage() {
     message: "",
   });
 
+  type Folder = {
+    id: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+    _count?: {
+      files: number;
+    };
+  };
+
+  const fetchFolders = async () => {
+    try {
+      setLoadingFolders(true);
+
+      const res = await fetch("/api/folders");
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch folders");
+      }
+
+      const data = await res.json();
+      setFolders(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingFolders(false);
+    }
+  };
+
+  const handleCreateFolder = async (name?: string) => {
+    if (!name?.trim()) return;
+console.log("Create folder")
+    const res = await fetch("/api/folders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name.trim(),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.error);
+      return;
+    }
+
+    toast.success("Folder created");
+
+    fetchFolders();
+  };
+
+  useEffect(() => {
+    fetchFolders();
+  }, []);
+
   function formatSize(bytes: number) {
     const sizes = ["B", "KB", "MB", "GB"];
     let i = 0;
@@ -58,10 +119,10 @@ export default function UploadPage() {
     while (bytes >= 1024 && i < sizes.length - 1) {
       bytes /= 1024;
       i++;
-  }
+    }
 
-  return `${bytes.toFixed(1)} ${sizes[i]}`;
-}
+    return `${bytes.toFixed(1)} ${sizes[i]}`;
+  }
 
   function validateFile(file: File): string | null {
     if (!allowedTypes.includes(file.type)) {
@@ -149,9 +210,7 @@ export default function UploadPage() {
         } finally {
           clearTimeout(timeout);
 
-          setUploadingFiles((prev) =>
-            prev.filter((f) => f !== file.name)
-          );
+          setUploadingFiles((prev) => prev.filter((f) => f !== file.name));
         }
       }
 
@@ -245,6 +304,31 @@ export default function UploadPage() {
             </p>
           </div>
         </header>
+
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-3">Folders</h2>
+
+          {loadingFolders ? (
+            <p>Loading...</p>
+          ) : folders.length === 0 ? (
+            <p>No folders yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {folders.map((folder) => (
+                <div
+                  key={folder.id}
+                  className="border rounded-lg p-3 flex justify-between items-center"
+                >
+                  <span>📁 {folder.name}</span>
+
+                  <span className="text-sm text-gray-500">
+                    {folder._count?.files ?? 0} files
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="relative w-full">
           <AnimatePresence mode="wait">
@@ -365,6 +449,9 @@ export default function UploadPage() {
                     : "border-neutral-200 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none hover:border-neutral-300 dark:hover:border-neutral-700"
                 }`}
               >
+                <button onClick={() => setFolderModalOpen(true)}>
+                  + New Folder
+                </button>
                 <motion.div
                   animate={
                     isDragging ? { scale: 1.2, rotate: 5 } : { scale: 1 }
@@ -406,6 +493,14 @@ export default function UploadPage() {
                 </label>
               </motion.div>
             )}
+            <CustomModal
+              isOpen={folderModalOpen}
+              onClose={() => setFolderModalOpen(false)}
+              type="folder"
+              title="Create Folder"
+              message="Enter a name for your new folder."
+              onConfirm={handleCreateFolder}
+            />
           </AnimatePresence>
         </div>
 
@@ -511,7 +606,7 @@ export default function UploadPage() {
       const { url } = await res.json();
 
       if (action === "view") {
-        router.push(`/file/${id}?from=upload`)
+        router.push(`/file/${id}?from=upload`);
       }
 
       if (action === "download") {
@@ -522,7 +617,6 @@ export default function UploadPage() {
         link.click();
         link.remove();
       }
-
     } catch {
       toast.error("Unable to perform action");
     }
@@ -539,16 +633,16 @@ export default function UploadPage() {
   }
 
   function handleShare(id: string) {
-  const file = files.find((f) => f.id === id);
+    const file = files.find((f) => f.id === id);
 
-  setModal({
-    isOpen: true,
-    type: "share",
-    title: "Share File",
-    message: "Select expiry duration",
-    file,
-  });
-}
+    setModal({
+      isOpen: true,
+      type: "share",
+      title: "Share File",
+      message: "Select expiry duration",
+      file,
+    });
+  }
 
   function handleDelete(f: FileItem) {
     setModal({
@@ -564,27 +658,26 @@ export default function UploadPage() {
     if (!modal.file) return;
 
     try {
-          if (modal.type === "share") {
-      const expiresInHours =
-        value === "never" ? null : Number(value);
+      if (modal.type === "share") {
+        const expiresInHours = value === "never" ? null : Number(value);
 
-      const res = await fetch("/api/upload/share", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "file",
-          resourceId: modal.file.id,
-          expiresInHours,
-        }),
-      });
+        const res = await fetch("/api/upload/share", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "file",
+            resourceId: modal.file.id,
+            expiresInHours,
+          }),
+        });
 
-      if (!res.ok) throw new Error("Share failed");
+        if (!res.ok) throw new Error("Share failed");
 
-      const { url } = await res.json();
-      await navigator.clipboard.writeText(url);
+        const { url } = await res.json();
+        await navigator.clipboard.writeText(url);
 
-      toast.success("Share link copied!");
-    }
+        toast.success("Share link copied!");
+      }
       if (modal.type === "rename") {
         if (!value || value.trim() === modal.file.name) {
           toast.error("Invalid file name");
@@ -601,8 +694,8 @@ export default function UploadPage() {
 
         setFiles((prev) =>
           prev.map((x) =>
-            x.id === modal.file?.id ? { ...x, name: value.trim() } : x
-          )
+            x.id === modal.file?.id ? { ...x, name: value.trim() } : x,
+          ),
         );
 
         toast.success("File renamed successfully");

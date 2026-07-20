@@ -19,6 +19,7 @@ model User {
 
   notes Note[]
   files File[]
+  folders Folder[]
   ShareToken ShareToken[]
 }
 
@@ -78,9 +79,11 @@ model File {
   size      Int
   type      String
   userId    String
+  folderId  String?
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder Folder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -97,4 +100,19 @@ model ShareToken {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  files File[]
+
+  @@index([userId])
+  @@unique([userId, name])
 }
