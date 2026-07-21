@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
@@ -79,13 +73,17 @@ export default function NotesEditor({
   initialActiveId?: string | null;
 }) {
   const [notes, setNotes] = useState(initialNotes);
-  const [activeId, setActiveId] = useState<string | null>(initialActiveId ?? null);
+  const [activeId, setActiveId] = useState<string | null>(
+    initialActiveId ?? null,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreview>>({});
+  const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreview>>(
+    {},
+  );
   const [openPreviews, setOpenPreviews] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const previousId = useRef<string | null>(null);
@@ -110,7 +108,9 @@ export default function NotesEditor({
 
     return notes.filter((note) => {
       const content = note.content.slice(0, 700).toLowerCase();
-      return note.title.toLowerCase().includes(query) || content.includes(query);
+      return (
+        note.title.toLowerCase().includes(query) || content.includes(query)
+      );
     });
   }, [notes, searchQuery]);
 
@@ -282,7 +282,9 @@ export default function NotesEditor({
       message: `Are you sure you want to permanently delete "${title || "Untitled"}"?`,
       onConfirm: async () => {
         try {
-          const response = await fetch(`/api/notes/${id}`, { method: "DELETE" });
+          const response = await fetch(`/api/notes/${id}`, {
+            method: "DELETE",
+          });
           if (!response.ok) throw new Error("Delete failed");
 
           const updatedNotes = notes.filter((note) => note.id !== id);
@@ -303,7 +305,10 @@ export default function NotesEditor({
         <div className="absolute -bottom-52 -right-52 h-[34rem] w-[34rem] rounded-full bg-indigo-400/10 blur-[120px] dark:bg-indigo-600/10" />
       </div>
 
-      <CustomModal {...modal} onClose={() => setModal((previous) => ({ ...previous, isOpen: false }))} />
+      <CustomModal
+        {...modal}
+        onClose={() => setModal((previous) => ({ ...previous, isOpen: false }))}
+      />
 
       <AnimatePresence>
         {sidebarOpen && (
@@ -333,10 +338,15 @@ export default function NotesEditor({
                 Your sheets
               </h1>
               <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                {notes.length} note{notes.length === 1 ? "" : "s"} in your archive
+                {notes.length} note{notes.length === 1 ? "" : "s"} in your
+                archive
               </p>
             </div>
-            <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-xl p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-white md:hidden">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(false)}
+              className="rounded-xl p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-white md:hidden"
+            >
               <X size={17} />
             </button>
           </div>
@@ -346,12 +356,18 @@ export default function NotesEditor({
             onClick={createNote}
             className="group mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-85 active:scale-[0.98] dark:bg-white dark:text-black"
           >
-            <Plus size={17} className="transition-transform duration-300 group-hover:rotate-90" />
+            <Plus
+              size={17}
+              className="transition-transform duration-300 group-hover:rotate-90"
+            />
             New note
           </button>
 
           <div className="relative mt-3">
-            <Search size={16} className={`pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${searchQuery ? "text-blue-500" : "text-neutral-400"}`} />
+            <Search
+              size={16}
+              className={`pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${searchQuery ? "text-blue-500" : "text-neutral-400"}`}
+            />
             <input
               ref={searchInputRef}
               placeholder="Search your notes…"
@@ -360,7 +376,12 @@ export default function NotesEditor({
               className="w-full rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 pl-10 pr-16 text-sm text-neutral-800 outline-none transition-all placeholder:text-neutral-400 focus:border-blue-500/50 focus:bg-white focus:ring-4 focus:ring-blue-500/10 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:bg-[#111]"
             />
             {searchQuery ? (
-              <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-white">
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-white"
+              >
                 <X size={14} />
               </button>
             ) : (
@@ -373,10 +394,21 @@ export default function NotesEditor({
 
         <div className="flex items-center justify-between px-5 pb-3 pt-5 sm:px-6">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
-            {searchQuery ? `${filteredNotes.length} matches` : "Recently edited"}
+            {searchQuery
+              ? `${filteredNotes.length} matches`
+              : "Recently edited"}
           </p>
-          <button type="button" aria-label="Refresh notes" title="Refresh notes" onClick={refreshNotes} className="rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-white">
-            <RefreshCcw size={14} className={isRefreshing ? "animate-spin" : ""} />
+          <button
+            type="button"
+            aria-label="Refresh notes"
+            title="Refresh notes"
+            onClick={refreshNotes}
+            className="rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-white"
+          >
+            <RefreshCcw
+              size={14}
+              className={isRefreshing ? "animate-spin" : ""}
+            />
           </button>
         </div>
 
@@ -394,11 +426,15 @@ export default function NotesEditor({
                   className={`group relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition-all duration-200 ${note.id === activeId ? "border-neutral-300 bg-neutral-100 shadow-sm dark:border-neutral-700 dark:bg-neutral-800" : "border-transparent hover:border-neutral-200 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-900"}`}
                 >
                   <div className="flex min-w-0 items-start gap-3">
-                    <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${note.id === activeId ? "bg-white text-blue-500 shadow-sm dark:bg-neutral-700" : "bg-neutral-100 text-neutral-400 dark:bg-neutral-800"}`}>
+                    <div
+                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${note.id === activeId ? "bg-white text-blue-500 shadow-sm dark:bg-neutral-700" : "bg-neutral-100 text-neutral-400 dark:bg-neutral-800"}`}
+                    >
                       <FileText size={15} />
                     </div>
                     <div className="min-w-0 flex-1 pr-5">
-                      <h2 className={`truncate text-sm font-semibold ${note.id === activeId ? "text-neutral-900 dark:text-white" : "text-neutral-600 dark:text-neutral-300"}`}>
+                      <h2
+                        className={`truncate text-sm font-semibold ${note.id === activeId ? "text-neutral-900 dark:text-white" : "text-neutral-600 dark:text-neutral-300"}`}
+                      >
                         {note.title || "Untitled note"}
                       </h2>
                       <p className="mt-1 truncate text-[11px] leading-relaxed text-neutral-400 dark:text-neutral-500">
@@ -421,12 +457,17 @@ export default function NotesEditor({
               ))
             ) : (
               <div className="flex flex-col items-center px-6 py-16 text-center">
-                <Search size={24} className="mb-3 text-neutral-300 dark:text-neutral-600" />
+                <Search
+                  size={24}
+                  className="mb-3 text-neutral-300 dark:text-neutral-600"
+                />
                 <p className="font-serif text-lg text-neutral-600 dark:text-neutral-300">
                   {searchQuery ? "No matching notes" : "Your archive is empty"}
                 </p>
                 <p className="mt-1 text-xs leading-5 text-neutral-400">
-                  {searchQuery ? "Try another word or phrase." : "Create a note to get started."}
+                  {searchQuery
+                    ? "Try another word or phrase."
+                    : "Create a note to get started."}
                 </p>
               </div>
             )}
@@ -437,10 +478,17 @@ export default function NotesEditor({
       <main className="relative z-10 flex min-w-0 flex-1 flex-col">
         <header className="flex min-h-18 items-center justify-between border-b border-neutral-200/80 bg-white/65 px-4 py-3 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-[#0D0D0D]/65 sm:px-6 md:px-8">
           <div className="flex min-w-0 items-center gap-3">
-            <button type="button" aria-label="Open notes archive" onClick={() => setSidebarOpen(true)} className="rounded-xl p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white md:hidden">
+            <button
+              type="button"
+              aria-label="Open notes archive"
+              onClick={() => setSidebarOpen(true)}
+              className="rounded-xl p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white md:hidden"
+            >
               <Menu size={19} />
             </button>
-            <div className={`h-2 w-2 shrink-0 rounded-full ${isSaving ? "animate-pulse bg-blue-500" : "bg-emerald-500"}`} />
+            <div
+              className={`h-2 w-2 shrink-0 rounded-full ${isSaving ? "animate-pulse bg-blue-500" : "bg-emerald-500"}`}
+            />
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 {activeNote?.title || "No note selected"}
@@ -459,18 +507,38 @@ export default function NotesEditor({
                 className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${showingPreviews ? "bg-neutral-900 text-white dark:bg-white dark:text-black" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"}`}
               >
                 {showingPreviews ? <EyeOff size={15} /> : <Eye size={15} />}
-                <span className="hidden sm:inline">{showingPreviews ? "Write" : "Links"}</span>
-                <span className="hidden rounded-md bg-white/15 px-1.5 py-0.5 text-[10px] sm:inline dark:bg-black/10">{activeUrls.length}</span>
+                <span className="hidden sm:inline">
+                  {showingPreviews ? "Write" : "Links"}
+                </span>
+                <span className="hidden rounded-md bg-white/15 px-1.5 py-0.5 text-[10px] sm:inline dark:bg-black/10">
+                  {activeUrls.length}
+                </span>
               </button>
             )}
-            <button type="button" aria-label="Refresh archive" title="Refresh archive" onClick={refreshNotes} className="rounded-xl p-2.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white">
-              <RefreshCcw size={16} className={isRefreshing ? "animate-spin" : ""} />
+            <button
+              type="button"
+              aria-label="Refresh archive"
+              title="Refresh archive"
+              onClick={refreshNotes}
+              className="rounded-xl p-2.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+            >
+              <RefreshCcw
+                size={16}
+                className={isRefreshing ? "animate-spin" : ""}
+              />
             </button>
           </div>
         </header>
 
         <div className="custom-scrollbar relative flex-1 overflow-y-auto">
-          <div className="pointer-events-none absolute inset-0 opacity-[0.035] dark:opacity-[0.045]" style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "25px 25px" }} />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.035] dark:opacity-[0.045]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+              backgroundSize: "25px 25px",
+            }}
+          />
 
           <AnimatePresence mode="wait">
             {activeNote ? (
@@ -488,20 +556,70 @@ export default function NotesEditor({
                   ) : (
                     <>
                       <div className="mb-8 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                        <style
+                          dangerouslySetInnerHTML={{
+                            __html: `
+      .premium-scrollbar{
+        scrollbar-width:thin;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar{
+        width:6px;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-track{
+        background:transparent;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-thumb{
+        border-radius:999px;
+        border:2px solid transparent;
+        background-clip:padding-box;
+        transition:all .25s ease;
+      }
+
+      /* Light */
+      .premium-scrollbar::-webkit-scrollbar-thumb{
+        background-color:rgba(0,0,0,.14);
+      }
+
+      .premium-scrollbar:hover::-webkit-scrollbar-thumb{
+        background-color:rgba(0,0,0,.28);
+      }
+
+      /* Dark */
+      .dark .premium-scrollbar::-webkit-scrollbar-thumb{
+        background-color:rgba(255,255,255,.12);
+      }
+
+      .dark .premium-scrollbar:hover::-webkit-scrollbar-thumb{
+        background-color:rgba(255,255,255,.25);
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-thumb:active{
+        background-color:rgba(59,130,246,.65);
+      }
+    `,
+                          }}
+                        />
                         <PenLine size={14} />
                         Writing space
                       </div>
                       <input
                         value={activeNote.title}
-                        onChange={(event) => updateField("title", event.target.value)}
+                        onChange={(event) =>
+                          updateField("title", event.target.value)
+                        }
                         className="w-full bg-transparent font-serif text-4xl tracking-tight text-neutral-900 outline-none placeholder:text-neutral-200 dark:text-white dark:placeholder:text-neutral-800 sm:text-5xl md:text-6xl"
                         placeholder="Untitled note"
                       />
                       <div className="my-7 h-px bg-neutral-200/80 dark:bg-neutral-800" />
                       <textarea
                         value={activeNote.content}
-                        onChange={(event) => updateField("content", event.target.value)}
-                        className="min-h-[42vh] flex-1 resize-none bg-transparent text-base leading-8 text-neutral-600 outline-none placeholder:text-neutral-300 dark:text-neutral-300 dark:placeholder:text-neutral-600 sm:text-lg"
+                        onChange={(event) =>
+                          updateField("content", event.target.value)
+                        }
+                        className="min-h-[42vh] premium-scrollbar flex-1 resize-none bg-transparent text-base leading-8 text-neutral-600 outline-none placeholder:text-neutral-300 dark:text-neutral-300 dark:placeholder:text-neutral-600 sm:text-lg"
                         placeholder="Start writing your thoughts…"
                       />
                       <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-5 text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:border-neutral-800">
@@ -510,7 +628,14 @@ export default function NotesEditor({
                           <span>{activeNote.content.length} characters</span>
                         </div>
                         <span className="flex items-center gap-1.5">
-                          {isSaving ? <Loader2 size={12} className="animate-spin text-blue-500" /> : <Check size={12} className="text-emerald-500" />}
+                          {isSaving ? (
+                            <Loader2
+                              size={12}
+                              className="animate-spin text-blue-500"
+                            />
+                          ) : (
+                            <Check size={12} className="text-emerald-500" />
+                          )}
                           {isSaving ? "Saving" : "Autosave on"}
                         </span>
                       </div>
@@ -519,7 +644,10 @@ export default function NotesEditor({
                 </div>
               </motion.section>
             ) : (
-              <EmptyEditor onCreate={createNote} onOpenArchive={() => setSidebarOpen(true)} />
+              <EmptyEditor
+                onCreate={createNote}
+                onOpenArchive={() => setSidebarOpen(true)}
+              />
             )}
           </AnimatePresence>
         </div>
@@ -528,15 +656,25 @@ export default function NotesEditor({
   );
 }
 
-function LinkDesk({ urls, previews }: { urls: string[]; previews: Record<string, LinkPreview> }) {
+function LinkDesk({
+  urls,
+  previews,
+}: {
+  urls: string[];
+  previews: Record<string, LinkPreview>;
+}) {
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
         <Link2 size={14} />
         Linked references
       </div>
-      <h2 className="mt-3 font-serif text-3xl tracking-tight text-neutral-800 dark:text-white">Your link desk</h2>
-      <p className="mt-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400">Reference cards found in this note. Open any source in a new tab.</p>
+      <h2 className="mt-3 font-serif text-3xl tracking-tight text-neutral-800 dark:text-white">
+        Your link desk
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+        Reference cards found in this note. Open any source in a new tab.
+      </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {urls.map((url, index) => {
           const preview = previews[url];
@@ -553,9 +691,16 @@ function LinkDesk({ urls, previews }: { urls: string[]; previews: Record<string,
             >
               <div className="relative flex aspect-[16/8] items-center justify-center overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                 {preview?.image ? (
-                  <img src={preview.image} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <img
+                    src={preview.image}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 ) : (
-                  <Link2 size={26} className="text-neutral-300 dark:text-neutral-600" />
+                  <Link2
+                    size={26}
+                    className="text-neutral-300 dark:text-neutral-600"
+                  />
                 )}
                 <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               </div>
@@ -564,7 +709,10 @@ function LinkDesk({ urls, previews }: { urls: string[]; previews: Record<string,
                   <h3 className="min-w-0 flex-1 line-clamp-2 font-serif text-lg leading-snug text-neutral-800 transition-colors group-hover:text-blue-600 dark:text-neutral-100 dark:group-hover:text-blue-400">
                     {preview?.title || new URL(url).hostname}
                   </h3>
-                  <ExternalLink size={15} className="mt-1 shrink-0 text-neutral-300 dark:text-neutral-600" />
+                  <ExternalLink
+                    size={15}
+                    className="mt-1 shrink-0 text-neutral-300 dark:text-neutral-600"
+                  />
                 </div>
                 <p className="mt-2 line-clamp-3 text-xs leading-5 text-neutral-500 dark:text-neutral-400">
                   {preview?.description || url}
@@ -578,20 +726,41 @@ function LinkDesk({ urls, previews }: { urls: string[]; previews: Record<string,
   );
 }
 
-function EmptyEditor({ onCreate, onOpenArchive }: { onCreate: () => void; onOpenArchive: () => void }) {
+function EmptyEditor({
+  onCreate,
+  onOpenArchive,
+}: {
+  onCreate: () => void;
+  onOpenArchive: () => void;
+}) {
   return (
     <div className="relative flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center px-6 text-center">
       <div className="flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-neutral-200 bg-white text-blue-500 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
         <FileText size={32} />
       </div>
-      <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Notes archive</p>
-      <h2 className="mt-2 font-serif text-3xl tracking-tight text-neutral-800 dark:text-white">A clear page is waiting.</h2>
-      <p className="mt-3 max-w-sm text-sm leading-6 text-neutral-500 dark:text-neutral-400">Open a note from your archive, or start a fresh thought whenever you&apos;re ready.</p>
+      <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+        Notes archive
+      </p>
+      <h2 className="mt-2 font-serif text-3xl tracking-tight text-neutral-800 dark:text-white">
+        A clear page is waiting.
+      </h2>
+      <p className="mt-3 max-w-sm text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+        Open a note from your archive, or start a fresh thought whenever
+        you&apos;re ready.
+      </p>
       <div className="mt-7 flex gap-3">
-        <button type="button" onClick={onCreate} className="flex items-center gap-2 rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-80 dark:bg-white dark:text-black">
+        <button
+          type="button"
+          onClick={onCreate}
+          className="flex items-center gap-2 rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-80 dark:bg-white dark:text-black"
+        >
           <Plus size={16} /> New note
         </button>
-        <button type="button" onClick={onOpenArchive} className="rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 md:hidden">
+        <button
+          type="button"
+          onClick={onOpenArchive}
+          className="rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 md:hidden"
+        >
           Open archive
         </button>
       </div>
