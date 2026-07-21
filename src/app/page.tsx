@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ArrowRight, X, Moon, Sun, HardDrive, Zap, Box, Lock, Check, FileText } from "lucide-react";
+import { ArrowRight, X, Moon, Sun, HardDrive, Zap, FileText, Lock, Check, Box } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import Logo from "@/lib/logo";
@@ -9,29 +9,57 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 
+/**
+ * Design language: a digitized ledger / card-catalog system.
+ * Paper background, ink typography, a stamp-red accent for the one
+ * signature moment (the "FILED" stamp), and thin ledger rules standing
+ * in for the gradient-blob backgrounds AI-generated pages default to.
+ */
+
+const INK = "#1C1912";
+const INK_DARK = "#EDE8DA";
+const PAPER = "#F4F1E8";
+const PAPER_DARK = "#14120E";
+const GRAPHITE = "#6E6656";
+const GRAPHITE_DARK = "#9C9484";
+const STAMP = "#9B2226";
+const STAMP_DARK = "#C6483C";
+const LEDGER_BLUE = "#2B4570";
+const LEDGER_BLUE_DARK = "#7DA0C4";
+
 interface FAQItemProps {
+  index: number;
   question: string;
   answer: string;
 }
 
-const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
+const FAQItem: React.FC<FAQItemProps> = ({ index, question, answer }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
-    <div className="border-b-2 border-black/5 dark:border-white/10 py-5">
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="flex w-full items-center justify-between text-left font-bold text-lg text-black dark:text-white"
+    <div className="border-b-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 py-6">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between text-left gap-4"
       >
-        <span className="pr-4">{question}</span>
-        <span className="text-2xl font-light text-neutral-400">{isOpen ? "−" : "+"}</span>
+        <span className="flex items-baseline gap-4">
+          <span className="font-mono-case text-xs text-[#9B2226] dark:text-[#C6483C] font-bold tracking-[0.15em] shrink-0">
+            Q{String(index).padStart(2, "0")}
+          </span>
+          <span className="font-bold text-lg md:text-xl text-[#1C1912] dark:text-[#EDE8DA]">
+            {question}
+          </span>
+        </span>
+        <span className="text-2xl font-light text-[#6E6656] dark:text-[#9C9484] shrink-0">
+          {isOpen ? "\u2212" : "+"}
+        </span>
       </button>
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden text-neutral-600 dark:text-neutral-400 text-base leading-relaxed mt-4"
+            className="overflow-hidden text-[#6E6656] dark:text-[#9C9484] text-base leading-relaxed mt-4 pl-0 md:pl-12"
           >
             {answer}
           </motion.div>
@@ -56,260 +84,408 @@ const Landing: React.FC = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
-    const manageSignin = () => {
+  const manageSignin = () => {
     if (session) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     } else {
       setLoginModal(true);
     }
   };
 
+  const scrollToPricing = () => {
+    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   if (!mounted) return null;
 
   return (
-    <div className={`min-h-screen font-sans selection:bg-black/10 dark:selection:bg-white/20 transition-colors duration-500`}>
-      <div className="min-h-screen bg-[#ffffff] dark:bg-[#0A0A0A] text-[#1A1A1A] dark:text-[#EDEDED] relative overflow-hidden transition-colors duration-500">
+    <div className="min-h-screen font-['Inter'] selection:bg-[#9B2226]/20 dark:selection:bg-[#C6483C]/30 transition-colors duration-500">
+      <style jsx global>{`
+        @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap");
+        .font-display {
+          font-family: "Fraunces", serif;
+        }
+        .font-mono-case {
+          font-family: "JetBrains Mono", monospace;
+        }
+        @keyframes inkSpread {
+          0% {
+            transform: scale(0.4);
+            opacity: 0.6;
+          }
+          100% {
+            transform: scale(2.4);
+            opacity: 0;
+          }
+        }
+        .ink-spread {
+          animation: inkSpread 1.6s ease-out 1s 1 both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ink-spread {
+            animation: none;
+            display: none;
+          }
+        }
+      `}</style>
 
-        {/* <div className="absolute top-[-11%] left-[-19%] w-[50vw] h-[50vw] bg-indigo-200 dark:bg-indigo-900/50 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-neutral-200/50 dark:bg-neutral-100 blur-[10px] rounded-full pointer-events-none" /> */}
-
-        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-xl backdrop-blur-xl bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
-          <div className="flex items-center gap-1 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth'})}>
+      <div className="min-h-screen bg-[#F4F1E8] dark:bg-[#14120E] text-[#1C1912] dark:text-[#EDE8DA] relative overflow-hidden transition-colors duration-500">
+        {/* Nav */}
+        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-lg backdrop-blur-xl bg-[#F4F1E8]/70 dark:bg-[#14120E]/70 border border-[#1C1912]/10 dark:border-[#EDE8DA]/10 shadow-[0_8px_32px_rgba(28,25,18,0.06)]">
+          <div
+            className="flex items-center gap-1.5 group cursor-pointer"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          >
             <div className="flex items-center justify-center transition-transform group-hover:scale-105">
-              <Logo className="text-black dark:text-white w-4 h-4 md:w-6 md:h-6" />
+              <Logo className="text-[#1C1912] dark:text-[#EDE8DA] w-4 h-4 md:w-6 md:h-6" />
             </div>
-            <span className="text-xs md:text-[16px] font-extrabold tracking-tighter uppercase text-black dark:text-white">paperless</span>
+            <span className="text-xs md:text-[16px] font-extrabold tracking-tighter uppercase text-[#1C1912] dark:text-[#EDE8DA]">
+              paperless
+            </span>
           </div>
-          
-          <div className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
-            <Link href="https://github.com/prodot-com/paperless" className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1.5 group">
-            Developer <ArrowRight size={10} className="transition-transform group-hover:translate-x-1"/>
+
+          <div className="hidden md:flex items-center gap-8 text-[11px] font-mono-case font-bold uppercase tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484]">
+            <Link
+              href="https://github.com/prodot-com/paperless"
+              className="hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors flex items-center gap-1.5 group"
+            >
+              Developer <ArrowRight size={10} className="transition-transform group-hover:translate-x-1" />
             </Link>
-            <Link href="https://probalghosh.dev" className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1.5 group">
-              Company <ArrowRight size={10} className="transition-transform group-hover:translate-x-1"/>
+            <Link
+              href="https://probalghosh.dev"
+              className="hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors flex items-center gap-1.5 group"
+            >
+              Company <ArrowRight size={10} className="transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-neutral-600 dark:text-neutral-400"
+              className="p-2 rounded-md hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-[#6E6656] dark:text-[#9C9484]"
             >
               {resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <button 
+            <button
               onClick={manageSignin}
-              className="cursor-pointer bg-black dark:bg-white text-white dark:text-black px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all active:scale-95 shadow-lg shadow-black/10 dark:shadow-white/5"
+              className="cursor-pointer bg-[#1C1912] dark:bg-[#EDE8DA] text-[#F4F1E8] dark:text-[#14120E] px-4 md:px-6 py-2 md:py-2.5 rounded-sm text-xs font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-[#332E22] dark:hover:bg-white transition-all active:scale-95 shadow-lg shadow-[#1C1912]/10 dark:shadow-black/20"
             >
-              {session ? "Access Here": "Join"}
+              {session ? "Access Vault" : "Join"}
             </button>
           </div>
         </nav>
 
-        <main className="relative pt-32 pb-16 md:pt-50 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
-          
-        <div className="absolute top-[0%] left-[0%] md:top-[-17%] md:left-[-40%] w-[70vw] h-[70vw] md:w-[50vw] md:h-[50vw] 
-        bg-indigo-300 md:bg-indigo-200 dark:bg-indigo-900/50 md:dark:bg-indigo-900/50 blur-[70px] md:blur-[120px] rounded-br-full pointer-events-none" />
-        
-        <div className="absolute top-[65%] right-0 md:top-[17%] md:-right-68 w-[70vw] h-[70vw] md:w-[40vw] md:h-[40vw] 
-        bg-green-300/75 md:bg-green-200 dark:bg-indigo-900/55 blur-[90px] md:blur-[120px] rounded-tl-full pointer-events-none" />
+        {/* Hero */}
+        <main className="relative pt-32 pb-16 md:pt-48 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
+          {/* ledger rule texture */}
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,#DDD5BE_32px)] dark:bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,#2A2418_32px)] opacity-40 pointer-events-none" />
+          {/* margin rule */}
+          <div className="hidden md:block absolute left-16 top-0 bottom-0 w-px bg-[#9B2226]/20 dark:bg-[#C6483C]/25 pointer-events-none" />
 
-          <motion.div 
+          {/* postmark rings, replacing gradient blobs */}
+          <div className="absolute -left-28 -top-28 w-[420px] h-[420px] rounded-full border-[3px] border-[#9B2226]/10 dark:border-[#C6483C]/10 pointer-events-none" />
+          <div className="absolute -right-32 top-32 w-[300px] h-[300px] rounded-full border-[3px] border-[#2B4570]/10 dark:border-[#7DA0C4]/15 pointer-events-none" />
+
+          {/* left doodle: paperclip */}
+          <motion.div
             initial={{ opacity: 0, x: -20, y: 10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 3, delay: 0.7 }}
-            className="hidden lg:block absolute -left-7 top-16 w-56 h-56 text-black dark:text-white opacity-80 pointer-events-none"
+            transition={{ duration: 2, delay: 0.6 }}
+            className="hidden lg:block absolute -left-4 top-24 w-40 h-48 text-[#1C1912] dark:text-[#EDE8DA] opacity-70 pointer-events-none"
           >
             <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M40 140 L100 170 L160 140 M40 100 L100 130 L160 100 L100 70 Z" />
-              <path d="M100 130 V170" />
-              <circle cx="100" cy="50" r="12" />
-              <path d="M85 75 L60 60" />
-              <path d="M115 75 L140 60" />
-              <circle cx="60" cy="60" r="6" />
-              <circle cx="140" cy="60" r="6" />
-              <circle cx="140" cy="40" r="4" />
-              <path d="M140 60 L140 40" />
+              <path d="M75 40 L75 145 Q75 175 105 175 Q135 175 135 145 L135 55 Q135 35 115 35 Q95 35 95 55 L95 130" />
+              <path d="M75 40 Q75 25 90 25" />
             </svg>
           </motion.div>
 
-          <motion.div 
+          {/* right doodle: filing tray */}
+          <motion.div
             initial={{ opacity: 0, x: 20, y: -10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 3, delay: 0.5 }}
-            className="hidden lg:block absolute right-0 bottom-50 w-48 h-48 text-black dark:text-white opacity-80 pointer-events-none"
+            transition={{ duration: 2, delay: 0.4 }}
+            className="hidden lg:block absolute right-0 bottom-48 w-48 h-40 text-[#1C1912] dark:text-[#EDE8DA] opacity-70 pointer-events-none"
           >
             <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M40 100 L100 80 L160 100 L100 120 Z" />
-              <path d="M60 106 V140 Q100 160 140 140 V106" />
-              <path d="M160 100 V130" />
-              <circle cx="160" cy="130" r="4" fill="currentColor" />
+              <path d="M35 150 H165" />
+              <path d="M48 150 L60 105 H140 L152 150" />
+              <path d="M78 105 V78 H122 V105" />
             </svg>
           </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-5xl sm:text-6xl md:text-[85px] font-black tracking-tight leading-[1.1] md:leading-[1.05] text-black dark:text-white mb-6 w-full relative z-10"
-          >
-            Your all-in-one <br /> digital asset platform <br />
-            <div className="relative inline-block mt-2">
-              <span className="font-serif italic font-light text-5xl sm:text-6xl md:text-[95px] pr-4 md:pr-8">perfectly structured</span>
-              
-              <svg className="hidden lg:block absolute -right-8 bottom-1 w-8 h-8 md:w-12 md:h-12 text-black dark:text-white" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 50 Q 45 45, 45 15" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-                <path d="M30 22 L 45 15 L 52 28" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </motion.h1>
 
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-base font-serif italic sm:text-lg md:text-xl text-neutral-500 dark:text-neutral-400 mb-10 md:mb-12 max-w-2xl leading-relaxed font-normal px-2"
+          {/* stamp — signature element */}
+          <motion.div
+            initial={{ opacity: 0, scale: 1.6, rotate: -26 }}
+            animate={{ opacity: 1, scale: 1, rotate: -9 }}
+            transition={{ type: "spring", stiffness: 180, damping: 13, delay: 0.65 }}
+            className="hidden sm:block absolute right-4 top-28 md:right-16 md:top-16 z-20 select-none pointer-events-none"
           >
-            Managing your intellectual property is already challenging enough.<br className="hidden sm:block"/>
-            Avoid further complications by ditching scattered files.
+            <div className="relative">
+              <div className="ink-spread absolute inset-0 rounded-full border-2 border-[#9B2226] dark:border-[#C6483C]" />
+              <div className="border-[3px] border-[#9B2226] dark:border-[#C6483C] rounded-sm px-1 py-1">
+                <div className="border border-[#9B2226]/70 dark:border-[#C6483C]/70 px-3 py-2 text-center">
+                  <p className="font-mono-case text-[10px] md:text-xs font-bold tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C]">
+                    FILED
+                  </p>
+                  <p className="font-mono-case text-[8px] md:text-[9px] tracking-[0.2em] mt-0.5 text-[#9B2226]/80 dark:text-[#C6483C]/80">
+                    NO. 2026-01
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="font-mono-case text-[11px] md:text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-6 relative z-10"
+          >
+            Digital Vault — Case No. 2026-01
           </motion.p>
 
-          <motion.div 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto relative z-20 mb-16"
+            transition={{ delay: 0.25 }}
+            className="font-display text-5xl sm:text-6xl md:text-[76px] font-bold tracking-tight leading-[1.1] text-[#1C1912] dark:text-[#EDE8DA] mb-6 w-full relative z-10"
           >
-            <button 
+            Every note and file,
+            <br />
+            <span className="italic font-medium text-[#9B2226] dark:text-[#C6483C]">in one place, for good.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="text-base sm:text-lg md:text-xl text-[#6E6656] dark:text-[#9C9484] mb-8 max-w-2xl leading-relaxed font-normal px-2 relative z-10"
+          >
+            Managing your intellectual property is hard enough. Paperless gives your notes and
+            files a permanent, searchable address — so nothing gets buried in another folder.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto relative z-20 mb-6"
+          >
+            <button
               onClick={manageSignin}
-              className="w-full sm:w-auto cursor-pointer px-8 py-3.5 rounded-xl text-sm font-bold text-black dark:text-white bg-transparent border-2 border-black dark:border-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+              className="w-full sm:w-auto cursor-pointer px-8 py-3.5 rounded-sm text-sm font-mono-case font-bold uppercase tracking-[0.1em] text-[#F4F1E8] dark:text-[#14120E] bg-[#1C1912] dark:bg-[#EDE8DA] border-2 border-[#1C1912] dark:border-[#EDE8DA] hover:bg-[#332E22] dark:hover:bg-white transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#1C1912]/10 dark:shadow-black/20"
             >
-              Start Organizing
+              Start Filing
             </button>
-            <button 
-              onClick={manageSignin}
-              className="w-full sm:w-auto cursor-pointer px-8 py-3.5 rounded-xl text-sm font-bold text-white dark:text-black bg-black dark:bg-white border-2 border-black dark:border-white hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-xl shadow-black/10 dark:shadow-white/10"
+            <button
+              onClick={scrollToPricing}
+              className="w-full sm:w-auto cursor-pointer px-8 py-3.5 rounded-sm text-sm font-mono-case font-bold uppercase tracking-[0.1em] text-[#1C1912] dark:text-[#EDE8DA] bg-transparent border-2 border-[#1C1912] dark:border-[#EDE8DA] hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors flex items-center justify-center gap-2"
             >
-              Upgrade to Pro
+              View Plans
             </button>
           </motion.div>
 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex items-center gap-2 text-[11px] font-mono-case uppercase tracking-[0.15em] text-[#6E6656] dark:text-[#9C9484] relative z-10"
+          >
+            <Lock size={12} /> Encrypted vault &middot; Google sign-in &middot; No lock-in
+          </motion.div>
         </main>
 
-        <section id="features" className="bg-[#ffffff] dark:bg-[#0A0A0A] relative z-10 py-24 md:py-32 px-6 border-t ">
+        {/* Features */}
+        <section id="features" className="bg-[#F4F1E8] dark:bg-[#14120E] relative z-10 py-24 md:py-32 px-6 border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10">
           <div className="max-w-7xl mx-auto">
             <div className="mb-16 md:mb-20 text-center md:text-left">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-black dark:text-white mb-4 md:mb-6">Built for Focus. Designed for Control.</h2>
-              <p className="text-neutral-500 dark:text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto md:mx-0 font-light">Paperless keeps your notes and files structured, searchable, and secure — without clutter or complexity.</p>
+              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-4">
+                The System
+              </p>
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[#1C1912] dark:text-[#EDE8DA] mb-4 md:mb-6">
+                Built like a filing system, not a folder full of clutter.
+              </h2>
+              <p className="text-[#6E6656] dark:text-[#9C9484] text-lg sm:text-xl max-w-2xl mx-auto md:mx-0 font-normal">
+                Paperless keeps your notes and files structured, searchable, and secure —
+                every entry has a number, and every number has a place.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               {[
-                { icon: <Box className="w-6 h-6"/>, title: "Structured Notes", desc: "Create, edit, and instantly search your notes. Clean organization with fast indexing keeps your ideas accessible at all times." },
-                { icon: <HardDrive className="w-6 h-6"/>, title: "Secure File Vault", desc: "Upload and manage PDFs, images, and documents with encrypted Cloudflare R2 storage and controlled access." },
-                { icon: <Zap className="w-6 h-6"/>, title: "Real-Time Tracking", desc: "Monitor your vault usage with live storage metrics and capacity insights directly from your dashboard." }
+                {
+                  icon: <FileText className="w-6 h-6" />,
+                  no: "01",
+                  title: "Structured Notes",
+                  desc: "Create, edit, and instantly search your notes. Clean organization with fast indexing keeps your ideas accessible at all times.",
+                },
+                {
+                  icon: <HardDrive className="w-6 h-6" />,
+                  no: "02",
+                  title: "Secure File Vault",
+                  desc: "Upload and manage PDFs, images, and documents with encrypted Cloudflare R2 storage and controlled access.",
+                },
+                {
+                  icon: <Zap className="w-6 h-6" />,
+                  no: "03",
+                  title: "Real-Time Tracking",
+                  desc: "Monitor your vault usage with live storage metrics and capacity insights directly from your dashboard.",
+                },
               ].map((feature, i) => (
-                <motion.div 
+                <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ delay: i * 0.1 }}
-                  className="p-8 md:p-10 rounded-xl bg-transparent border-2 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white transition-all group"
+                  className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-full border-2 border-black dark:border-white flex items-center justify-center mb-6 text-black dark:text-white group-hover:scale-110 transition-transform bg-transparent">
-                    {feature.icon}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 rounded-full border-2 border-[#1C1912] dark:border-[#EDE8DA] flex items-center justify-center text-[#1C1912] dark:text-[#EDE8DA] group-hover:scale-110 transition-transform bg-transparent">
+                      {feature.icon}
+                    </div>
+                    <span className="font-mono-case text-xs font-bold tracking-[0.2em] text-[#9B2226] dark:text-[#C6483C]">
+                      NO. {feature.no}
+                    </span>
                   </div>
-                  <h3 className="text-2xl font-bold mb-3 text-black dark:text-white tracking-tight">{feature.title}</h3>
-                  <p className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed font-medium">{feature.desc}</p>
+                  <h3 className="text-2xl font-bold mb-3 text-[#1C1912] dark:text-[#EDE8DA] tracking-tight">
+                    {feature.title}
+                  </h3>
+                  <p className="text-base text-[#6E6656] dark:text-[#9C9484] leading-relaxed font-medium">
+                    {feature.desc}
+                  </p>
                 </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="pricing" className="relative z-10 py-24 md:py-32 px-6 bg-neutral-50 dark:bg-neutral-900/20 border-y-2 border-black/5 dark:border-white/5">
+        {/* Pricing */}
+        <section
+          id="pricing"
+          className="relative z-10 py-24 md:py-32 px-6 bg-[#EDE9DB] dark:bg-[#1A170F] border-y-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10"
+        >
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16 md:mb-20">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-black dark:text-white mb-4 md:mb-6">Simple, Transparent Plans</h2>
-              <p className="text-neutral-500 dark:text-neutral-400 text-lg sm:text-xl max-w-xl mx-auto font-light">Start free and scale as your digital workspace grows.</p>
+              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-4">
+                Plans — Ledger
+              </p>
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[#1C1912] dark:text-[#EDE8DA] mb-4 md:mb-6">
+                Three ways to file everything.
+              </h2>
+              <p className="text-[#6E6656] dark:text-[#9C9484] text-lg sm:text-xl max-w-xl mx-auto font-normal">
+                Start free and scale as your digital workspace grows.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
-              
-              <motion.div 
+              {/* Base */}
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-xl bg-transparent border-2 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white transition-colors relative flex flex-col"
+                className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-[#1C1912]/20 dark:border-[#EDE8DA]/20 hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-colors relative flex flex-col"
               >
-                <h3 className="text-2xl md:text-3xl font-black text-black dark:text-white mb-2 tracking-tight">Base</h3>
+                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484] mb-2">
+                  TIER — 01
+                </p>
+                <h3 className="text-2xl md:text-3xl font-black text-[#1C1912] dark:text-[#EDE8DA] mb-2 tracking-tight">
+                  Base
+                </h3>
                 <div className="mb-6 flex items-baseline gap-2">
-                  <span className="text-4xl md:text-5xl font-black tracking-tight text-black dark:text-white">Free</span>
+                  <span className="text-4xl md:text-5xl font-black tracking-tight text-[#1C1912] dark:text-[#EDE8DA]">
+                    Free
+                  </span>
                 </div>
-                <p className="text-base text-neutral-600 dark:text-neutral-400 mb-8 pb-8 border-b-2 border-black/10 dark:border-white/10 font-medium">Perfect for individuals organizing essential notes and documents.</p>
-                
+                <p className="text-base text-[#6E6656] dark:text-[#9C9484] mb-8 pb-8 border-b-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 font-medium">
+                  Perfect for individuals organizing essential notes and documents.
+                </p>
+
                 <ul className="space-y-5 mb-10 grow">
-                  {["1GB Vault Storage limit", "2MB maximum file size upload", "Standard Search & Indexing", "Google Authentication"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold text-black dark:text-white">
-                      <div className="p-1 rounded-full bg-black/5 dark:bg-white/10 shrink-0"><Check className="w-4 h-4 text-black dark:text-white" strokeWidth={3}/></div> {item}
-                    </li>
-                  ))}
+                  {["1GB Vault Storage limit", "2MB maximum file size upload", "Standard Search & Indexing", "Google Authentication"].map(
+                    (item, i) => (
+                      <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold text-[#1C1912] dark:text-[#EDE8DA]">
+                        <div className="p-1 rounded-full bg-[#1C1912]/5 dark:bg-[#EDE8DA]/10 shrink-0">
+                          <Check className="w-4 h-4 text-[#1C1912] dark:text-[#EDE8DA]" strokeWidth={3} />
+                        </div>
+                        {item}
+                      </li>
+                    )
+                  )}
                 </ul>
-                <button 
+                <button
                   onClick={manageSignin}
-                  className="w-full py-4 rounded-xl border-2 border-black dark:border-white text-black dark:text-white font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-lg"
+                  className="w-full py-4 rounded-sm border-2 border-[#1C1912] dark:border-[#EDE8DA] text-[#1C1912] dark:text-[#EDE8DA] font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-base"
                 >
                   Start Filing
                 </button>
               </motion.div>
 
-              <motion.div 
+              {/* Pro */}
+              <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-xl bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white relative flex flex-col shadow-2xl"
+                className="p-8 md:p-10 rounded-sm bg-[#1C1912] dark:bg-[#EDE8DA] text-[#F4F1E8] dark:text-[#14120E] border-2 border-[#1C1912] dark:border-[#EDE8DA] relative flex flex-col shadow-2xl"
               >
-                <div className="inline-flex self-start px-3 py-1 bg-white/20 dark:bg-black/10 text-white dark:text-black text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full mb-4">Most Popular</div>
+                <div className="absolute -top-3 -right-3 border-2 border-[#9B2226] dark:border-[#C6483C] bg-[#F4F1E8] dark:bg-[#14120E] rounded-sm px-3 py-1 rotate-[-4deg] shadow-lg">
+                  <span className="font-mono-case text-[10px] font-bold uppercase tracking-[0.15em] text-[#9B2226] dark:text-[#C6483C]">
+                    Most Filed
+                  </span>
+                </div>
+                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-[#F4F1E8]/60 dark:text-[#14120E]/60 mb-2">
+                  TIER — 02
+                </p>
                 <h3 className="text-2xl md:text-3xl font-black mb-2 tracking-tight">Pro</h3>
                 <div className="mb-6 flex items-baseline gap-2">
                   <span className="text-4xl md:text-5xl font-black tracking-tight">$8</span>
-                  <span className="text-white/70 dark:text-black/70 font-bold text-sm md:text-base">/month</span>
+                  <span className="text-[#F4F1E8]/70 dark:text-[#14120E]/70 font-bold text-sm md:text-base">/month</span>
                 </div>
-                <p className="text-base text-white/80 dark:text-black/80 mb-8 pb-8 border-b-2 border-white/20 dark:border-black/10 font-medium">For professionals managing larger files and extended storage needs.</p>
-                
+                <p className="text-base text-[#F4F1E8]/80 dark:text-[#14120E]/80 mb-8 pb-8 border-b-2 border-[#F4F1E8]/20 dark:border-[#14120E]/20 font-medium">
+                  For professionals managing larger files and extended storage needs.
+                </p>
+
                 <ul className="space-y-5 mb-10 grow">
-                  {["50GB Vault Storage limit", "25MB maximum file size upload", "Advanced Search Capabilities", "Priority email support"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold">
-                      <div className="p-1 rounded-full bg-white/20 dark:bg-black/10 shrink-0"><Check className="w-4 h-4" strokeWidth={3}/></div> {item}
-                    </li>
-                  ))}
+                  {["50GB Vault Storage limit", "25MB maximum file size upload", "Advanced Search Capabilities", "Priority email support"].map(
+                    (item, i) => (
+                      <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold">
+                        <div className="p-1 rounded-full bg-[#F4F1E8]/20 dark:bg-[#14120E]/10 shrink-0">
+                          <Check className="w-4 h-4" strokeWidth={3} />
+                        </div>
+                        {item}
+                      </li>
+                    )
+                  )}
                 </ul>
-                <button 
+                <button
                   onClick={manageSignin}
-                  className="w-full py-4 rounded-xl bg-white dark:bg-black text-black dark:text-white font-bold hover:scale-[1.02] transition-transform text-lg"
+                  className="w-full py-4 rounded-sm bg-[#F4F1E8] dark:bg-[#14120E] text-[#1C1912] dark:text-[#EDE8DA] font-mono-case font-bold uppercase tracking-[0.1em] hover:scale-[1.02] transition-transform text-base"
                 >
                   Upgrade to Pro
                 </button>
               </motion.div>
 
-              <motion.div 
+              {/* Enterprise */}
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-xl bg-transparent border-2 border-black/20 dark:border-white/20 hover:border-black dark:hover:border-white transition-colors relative flex flex-col"
+                className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-[#1C1912]/20 dark:border-[#EDE8DA]/20 hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-colors relative flex flex-col"
               >
-                <h3 className="text-2xl md:text-3xl font-black text-black dark:text-white mb-2 tracking-tight">
-                  Enterprise
+                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484] mb-2">
+                  TIER — 03
+                </p>
+                <h3 className="text-2xl md:text-3xl font-black text-[#1C1912] dark:text-[#EDE8DA] mb-2 tracking-tight flex items-center gap-2">
+                  Enterprise <Box className="w-5 h-5 text-[#9B2226] dark:text-[#C6483C]" />
                 </h3>
 
                 <div className="mb-6 flex items-baseline gap-2">
-                  <span className="text-4xl md:text-5xl font-black tracking-tight text-black dark:text-white">
+                  <span className="text-4xl md:text-5xl font-black tracking-tight text-[#1C1912] dark:text-[#EDE8DA]">
                     Custom
                   </span>
                 </div>
 
-                <p className="text-base text-neutral-600 dark:text-neutral-400 mb-8 pb-8 border-b-2 border-black/10 dark:border-white/10 font-medium">
+                <p className="text-base text-[#6E6656] dark:text-[#9C9484] mb-8 pb-8 border-b-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 font-medium">
                   For organizations requiring unlimited storage and dedicated infrastructure.
                 </p>
 
@@ -321,59 +497,68 @@ const Landing: React.FC = () => {
                     "Dedicated Support & SLA",
                     "Custom Integrations",
                   ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold text-black dark:text-white">
-                      <div className="p-1 rounded-full bg-black/5 dark:bg-white/10 shrink-0">
-                        <Check className="w-4 h-4 text-black dark:text-white" strokeWidth={3}/>
+                    <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold text-[#1C1912] dark:text-[#EDE8DA]">
+                      <div className="p-1 rounded-full bg-[#1C1912]/5 dark:bg-[#EDE8DA]/10 shrink-0">
+                        <Check className="w-4 h-4 text-[#1C1912] dark:text-[#EDE8DA]" strokeWidth={3} />
                       </div>
                       {item}
                     </li>
                   ))}
                 </ul>
 
-                <button 
+                <button
                   onClick={manageSignin}
-                  className="w-full py-4 rounded-xl border-2 border-black dark:border-white text-black dark:text-white font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-lg"
+                  className="w-full py-4 rounded-sm border-2 border-[#1C1912] dark:border-[#EDE8DA] text-[#1C1912] dark:text-[#EDE8DA] font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-base"
                 >
                   Contact Sales
                 </button>
               </motion.div>
-
             </div>
           </div>
         </section>
 
+        {/* FAQ */}
         <section id="faq" className="relative z-10 py-24 md:py-32 px-6">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12 md:mb-16">
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-black dark:text-white">Frequently Asked Questions</h2>
+              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-4">
+                Questions On Record
+              </p>
+              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[#1C1912] dark:text-[#EDE8DA]">
+                Frequently Asked Questions
+              </h2>
             </div>
-            
-            <div className="space-y-2 border-t-2 border-black/5 dark:border-white/10">
-              <FAQItem 
-                question="Is my data secure?" 
-                answer="Yes. All files are encrypted in transit and at rest. Authentication is securely handled through Google via NextAuth." 
+
+            <div className="space-y-2 border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10">
+              <FAQItem
+                index={1}
+                question="Is my data secure?"
+                answer="Yes. All files are encrypted in transit and at rest. Authentication is securely handled through Google via NextAuth."
               />
-              <FAQItem 
-                question="What happens when I reach my storage limit?" 
-                answer="You will be notified in your dashboard. You can either delete files to free up space or upgrade your plan." 
+              <FAQItem
+                index={2}
+                question="What happens when I reach my storage limit?"
+                answer="You will be notified in your dashboard. You can either delete files to free up space or upgrade your plan."
               />
-              <FAQItem 
-                question="Can I export my data?" 
-                answer="Yes. You can download your files and notes anytime — we believe in zero lock-in." 
+              <FAQItem
+                index={3}
+                question="Can I export my data?"
+                answer="Yes. You can download your files and notes anytime — we believe in zero lock-in."
               />
             </div>
           </div>
         </section>
 
-        <footer className="bg-[#ffffff] dark:bg-[#0A0A0A] border-t-2 border-black/10 dark:border-white/10 pt-16 md:pt-20 transition-colors duration-500 relative z-10">
+        {/* Footer */}
+        <footer className="bg-[#F4F1E8] dark:bg-[#14120E] border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 pt-16 md:pt-20 transition-colors duration-500 relative z-10">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-12 mb-12 text-center md:text-left">
               <div className="max-w-sm flex flex-col items-center md:items-start">
                 <div className="flex items-center gap-1 mb-4 md:mb-6 group">
                   <div className="flex items-center justify-center p-2">
-                    <Logo className="dark:text-white text-black w-5 h-5 md:w-7 md:h-7" />
+                    <Logo className="text-[#1C1912] dark:text-[#EDE8DA] w-5 h-5 md:w-7 md:h-7" />
                   </div>
-                  <span className="font-black tracking-tight uppercase text-xl md:text-2xl text-black dark:text-white leading-none">
+                  <span className="font-black tracking-tight uppercase text-xl md:text-2xl text-[#1C1912] dark:text-[#EDE8DA] leading-none">
                     Paperless
                   </span>
                 </div>
@@ -382,66 +567,79 @@ const Landing: React.FC = () => {
               <div className="flex flex-col items-center md:items-end gap-6 md:gap-8 w-full md:w-auto">
                 <div className="flex flex-wrap justify-center md:justify-end gap-x-8 gap-y-4">
                   {[
-                  { label: "Github", href: "https://github.com/prodot-com/paperless" },
-                  { label: "Contact", href: "https://probalghosh.dev" },
-                  { label: "License", href: "https://github.com/prodot-com/paperless/tree/main?tab=GPL-3.0-1-ov-file#readme" },
-                  { label: "Documentation", href: "https://github.com/prodot-com/paperless/blob/main/README.md" },
-                ].map((link) => (
-                    <a 
+                    { label: "Github", href: "https://github.com/prodot-com/paperless" },
+                    { label: "Contact", href: "https://probalghosh.dev" },
+                    { label: "License", href: "https://github.com/prodot-com/paperless/tree/main?tab=GPL-3.0-1-ov-file#readme" },
+                    { label: "Documentation", href: "https://github.com/prodot-com/paperless/blob/main/README.md" },
+                  ].map((link) => (
+                    <a
                       key={link.label}
                       href={link.href}
-                      className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-neutral-500 hover:text-black dark:hover:text-white transition-colors"
+                      className="font-mono-case text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-[#6E6656] dark:text-[#9C9484] hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors"
                     >
                       {link.label}
                     </a>
                   ))}
                 </div>
                 <div className="text-center md:text-right w-full">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-neutral-400 font-bold">
-                    Built by <a href="https://probalghosh.dev" className="text-black dark:text-white hover:underline">Probal Ghosh</a>
+                  <p className="font-mono-case text-[10px] sm:text-xs uppercase tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484] font-bold">
+                    Built by{" "}
+                    <a href="https://probalghosh.dev" className="text-[#1C1912] dark:text-[#EDE8DA] hover:underline">
+                      Probal Ghosh
+                    </a>
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="w-full relative text-center select-none overflow-hidden mt-6 md:mt-10">
-              <h2 className="text-[16vw] md:text-[14vw] font-black text-neutral-400/75 dark:text-neutral-800/85 leading-none tracking-tighter transition-colors duration-500">
-                PAPERLESS<span className="text-black dark:text-white">.</span>
+              <h2 className="font-display text-[16vw] md:text-[14vw] font-bold text-[#1C1912]/10 dark:text-[#EDE8DA]/10 leading-none tracking-tighter transition-colors duration-500">
+                PAPERLESS<span className="text-[#9B2226] dark:text-[#C6483C]">.</span>
               </h2>
-              <div className="absolute bottom-0 w-full h-full bg-linear-to-t from-[#F9F9F7] dark:from-[#0A0A0A] via-transparent to-transparent" />
+              <div className="absolute bottom-0 w-full h-full bg-linear-to-t from-[#F4F1E8] dark:from-[#14120E] via-transparent to-transparent" />
             </div>
           </div>
         </footer>
 
+        {/* Login modal */}
         <AnimatePresence>
           {loginModal && (
             <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
-              <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 onClick={() => setLoginModal(false)}
-                className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-[#F4F1E8]/85 dark:bg-[#14120E]/85 backdrop-blur-sm"
               />
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.95, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                className="relative w-full max-w-md bg-white dark:bg-[#111] rounded-xl shadow-2xl p-8 sm:p-10 border-2 border-black/10 dark:border-white/10 overflow-hidden"
+                className="relative w-full max-w-md bg-[#F4F1E8] dark:bg-[#1A170F] rounded-sm shadow-2xl p-8 sm:p-10 border-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 overflow-hidden"
               >
-                <button onClick={() => setLoginModal(false)} className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-400 hover:text-black dark:hover:text-white transition-colors z-10">
+                <button
+                  onClick={() => setLoginModal(false)}
+                  className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 text-[#6E6656] dark:text-[#9C9484] hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors z-10"
+                >
                   <X size={20} strokeWidth={2.5} />
                 </button>
-                
+
                 <div className="text-center relative z-10">
-                  <div className="flex items-center justify-center mx-auto mb-6 sm:mb-8 w-14 h-14 sm:w-16 sm:h-16 rounded-xl shadow-xl shadow-black/50 dark:shadow-white/25 transform -rotate-6">
-                    <Logo className="w-6 h-6 sm:w-8 sm:h-8 dark:text-white text-black" />
+                  <div className="flex items-center justify-center mx-auto mb-6 sm:mb-8 w-14 h-14 sm:w-16 sm:h-16 rounded-sm border-2 border-[#9B2226] dark:border-[#C6483C] transform -rotate-6">
+                    <Logo className="w-6 h-6 sm:w-8 sm:h-8 text-[#1C1912] dark:text-[#EDE8DA]" />
                   </div>
-                  
-                  <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2 text-black dark:text-white">Verify Identity</h2>
-                  <p className="text-sm sm:text-base text-neutral-500 mb-6 sm:mb-8 max-w-xs mx-auto font-medium">Access your digital vault and manage your IP securely.</p>
-                  
+
+                  <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight mb-2 text-[#1C1912] dark:text-[#EDE8DA]">
+                    Verify Identity
+                  </h2>
+                  <p className="text-sm sm:text-base text-[#6E6656] dark:text-[#9C9484] mb-6 sm:mb-8 max-w-xs mx-auto font-medium">
+                    Access your digital vault and manage your IP securely.
+                  </p>
+
                   <button
                     onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-                    className="cursor-pointer w-full flex items-center justify-center gap-3 bg-transparent border-2 border-black/20 dark:border-white/20 py-3.5 sm:py-4 rounded-xl font-bold hover:border-black dark:hover:border-white transition-all text-black dark:text-white active:scale-95 text-base sm:text-lg"
+                    className="cursor-pointer w-full flex items-center justify-center gap-3 bg-transparent border-2 border-[#1C1912]/20 dark:border-[#EDE8DA]/20 py-3.5 sm:py-4 rounded-sm font-bold hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-all text-[#1C1912] dark:text-[#EDE8DA] active:scale-95 text-base sm:text-lg"
                   >
                     <GoogleIcon />
                     Continue with Google
@@ -451,7 +649,6 @@ const Landing: React.FC = () => {
             </div>
           )}
         </AnimatePresence>
-        
       </div>
     </div>
   );
@@ -459,10 +656,10 @@ const Landing: React.FC = () => {
 
 const GoogleIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 24 24">
-    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.16H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.84l3.66-2.75z" fill="#FBBC05"/>
-    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.16l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.16H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.84l3.66-2.75z" fill="#FBBC05" />
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.16l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
   </svg>
 );
 

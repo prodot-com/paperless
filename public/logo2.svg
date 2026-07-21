@@ -1,0 +1,21 @@
+<svg 
+  viewBox="0 0 24 24" 
+  fill="none" 
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <rect 
+    x="4" 
+    y="3" 
+    width="6" 
+    height="18" 
+    rx="2" 
+    fill="black" 
+  />
+  <path 
+    fill-rule="evenodd" 
+    clip-rule="evenodd" 
+    d="M7 3H14C17.866 3 21 6.13401 21 10C21 13.866 17.866 17 14 17H7V3ZM11 7V13H14C15.6569 13 17 11.6569 17 10C17 8.34315 15.6569 7 14 7H11Z" 
+    fill="black" 
+    fill-opacity="0.5" 
+  />
+</svg>
