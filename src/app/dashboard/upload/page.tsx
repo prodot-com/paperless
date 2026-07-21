@@ -1,25 +1,32 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useEffect, useState, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Upload,
-  File,
-  Eye,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Check,
   Download,
-  Trash2,
-  Share2,
-  Type,
+  Eye,
+  File,
+  Folder,
+  FolderOpen,
+  FolderPlus,
+  Globe,
   HardDrive,
   Loader2,
-  Folder,
-  FolderPlus,
-  FolderOpen,
-  Globe,
   Lock,
+  Share2,
+  Trash2,
+  Type,
+  Upload,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import CustomModal from "@/components/CustomModal";
 import { allowedTypes, MAX_SIZE } from "@/lib/fileTypes";
@@ -47,153 +54,189 @@ type FolderItem = {
   };
 };
 
+type ModalState = {
+  isOpen: boolean;
+  type: "error" | "confirm" | "rename" | "share" | "folder";
+  title: string;
+  message: string;
+  file?: FileItem;
+};
+
+const emptyModal: ModalState = {
+  isOpen: false,
+  type: "confirm",
+  title: "",
+  message: "",
+};
+
+function formatSize(bytes: number) {
+  const sizes = ["B", "KB", "MB", "GB"];
+  let index = 0;
+  let value = bytes;
+
+  while (value >= 1024 && index < sizes.length - 1) {
+    value /= 1024;
+    index++;
+  }
+
+  return `${value.toFixed(index === 0 ? 0 : 1)} ${sizes[index]}`;
+}
+
 export default function UploadPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Public View State
   const publicUserId = searchParams.get("user");
-  const isPublicView = !!publicUserId;
-  const [ownerName, setOwnerName] = useState<string>("");
+  const isPublicView = Boolean(publicUserId);
+
+  const [ownerName, setOwnerName] = useState("");
   const [isVaultPublic, setIsVaultPublic] = useState(false);
-
-  const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
   const [files, setFiles] = useState<FileItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-
   const [folders, setFolders] = useState<FolderItem[]>([]);
-  const [loadingFolders, setLoadingFolders] = useState(true);
-  const [folderModalOpen, setFolderModalOpen] = useState(false);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [loadingFolders, setLoadingFolders] = useState(true);
+  const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [folderModalOpen, setFolderModalOpen] = useState(false);
+  const [modal, setModal] = useState<ModalState>(emptyModal);
 
-  const [modal, setModal] = useState<{
-    isOpen: boolean;
-    type: "error" | "confirm" | "rename" | "share" | "folder";
-    title: string;
-    message: string;
-    file?: FileItem;
-  }>({
-    isOpen: false,
-    type: "confirm",
-    title: "",
-    message: "",
-  });
-
-  const fetchFolders = async () => {
+  const fetchFolders = useCallback(async () => {
     if (isPublicView) return;
+
     try {
       setLoadingFolders(true);
-      const res = await fetch("/api/folders");
-      if (!res.ok) throw new Error("Failed to fetch folders");
-      const data = await res.json();
-      setFolders(data);
-    } catch (err) {
-      console.error(err);
+      const response = await fetch("/api/folders");
+      if (!response.ok) throw new Error("Unable to load folders");
+      setFolders((await response.json()) as FolderItem[]);
+    } catch {
+      toast.error("Unable to load folders");
     } finally {
       setLoadingFolders(false);
     }
-  };
-
-  const handleCreateFolder = async (name?: string) => {
-    if (!name?.trim() || isPublicView) return;
-    try {
-      const res = await fetch("/api/folders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() }),
-      });
-      const data = await res.json();
-      setFolders((prev) => [...prev, data]);
-      setSelectedFolderId(data.id);
-      toast.success(`Folder "${data.name}" created`);
-    } catch (err) {
-      toast.error("Failed to create folder");
-    }
-  };
+  }, [isPublicView]);
 
   useEffect(() => {
     if (status === "unauthenticated" && !isPublicView) {
       router.push("/login");
     }
-  }, [status, router, isPublicView]);
+  }, [isPublicView, router, status]);
 
   useEffect(() => {
-    const fetchVaultData = async () => {
+    let active = true;
+
+    const loadVault = async () => {
       if (isPublicView) {
         try {
           setLoadingFolders(true);
-          const res = await fetch(`/api/public/${publicUserId}`);
-          if (!res.ok) throw new Error("Failed to load public vault");
-          const data = await res.json();
+          const response = await fetch(`/api/public/${publicUserId}`);
+          if (!response.ok) throw new Error("Unable to load public vault");
+          const data = await response.json();
+          if (!active) return;
 
           setFolders(data.folders || []);
           setFiles(data.files || []);
           setOwnerName(data.owner?.name || data.owner?.email || "User");
-        } catch (err) {
+        } catch {
           toast.error("Unable to load public vault");
         } finally {
-          setLoadingFolders(false);
+          if (active) setLoadingFolders(false);
         }
-      } else if (status === "authenticated") {
-        fetchFolders();
-        fetch("/api/upload")
-          .then((res) => {
-            if (!res.ok) throw new Error("Failed to load files");
-            return res.json();
-          })
-          .then((data) => {
-            setFiles(data.files);
-            setIsVaultPublic(data.isVaultPublic);
-          })
-          .catch(() => {
-            toast.error("Unable to load files");
-          });
+        return;
+      }
+
+      if (status !== "authenticated") return;
+
+      await fetchFolders();
+      try {
+        const response = await fetch("/api/upload");
+        if (!response.ok) throw new Error("Unable to load vault");
+        const data = await response.json();
+        if (!active) return;
+
+        setFiles(data.files || []);
+        setIsVaultPublic(Boolean(data.isVaultPublic));
+      } catch {
+        toast.error("Unable to load vault files");
       }
     };
 
-    if (isPublicView || status === "authenticated") {
-      fetchVaultData();
-    }
-  }, [status, isPublicView, publicUserId]);
+    if (isPublicView || status === "authenticated") void loadVault();
+    return () => {
+      active = false;
+    };
+  }, [fetchFolders, isPublicView, publicUserId, status]);
 
-  const handleTogglePublic = async () => {
+  const groupedFiles = useMemo(() => {
+    const rootFiles = files.filter((file) => !file.folderId);
+    const folderGroups = folders
+      .map((folder) => ({
+        ...folder,
+        files: files.filter((file) => file.folderId === folder.id),
+      }))
+      .filter((group) => group.files.length > 0);
+
+    return { rootFiles, folderGroups };
+  }, [files, folders]);
+
+  const selectedFolder = folders.find(
+    (folder) => folder.id === selectedFolderId,
+  );
+  const destinationName = selectedFolder?.name || "Main vault";
+
+  async function handleCreateFolder(name?: string) {
+    if (!name?.trim() || isPublicView) return;
+
     try {
-      // Optimistic update for better UX
-      setIsVaultPublic(!isVaultPublic);
-      const res = await fetch("/api/public/toggle", { method: "PATCH" });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setIsVaultPublic(data.isVaultPublic);
+      const response = await fetch("/api/folders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!response.ok) throw new Error("Create failed");
+
+      const folder = (await response.json()) as FolderItem;
+      setFolders((previous) => [...previous, folder]);
+      setSelectedFolderId(folder.id);
+      toast.success(`Folder “${folder.name}” created`);
+    } catch {
+      toast.error("Failed to create folder");
+    }
+  }
+
+  async function handleTogglePublic() {
+    const nextValue = !isVaultPublic;
+    setIsVaultPublic(nextValue);
+
+    try {
+      const response = await fetch("/api/public/toggle", { method: "PATCH" });
+      if (!response.ok) throw new Error("Update failed");
+      const data = await response.json();
+      setIsVaultPublic(Boolean(data.isVaultPublic));
       toast.success(
         data.isVaultPublic ? "Vault is now public" : "Vault is now private",
       );
     } catch {
-      setIsVaultPublic(!isVaultPublic); // Revert on failure
+      setIsVaultPublic(!nextValue);
       toast.error("Failed to update vault visibility");
     }
-  };
+  }
 
-  const handleShareVault = () => {
+  async function handleShareVault() {
     const userId = session?.user?.id;
     if (!userId) {
-      toast.error("Unable to identify user ID for sharing");
+      toast.error("Unable to generate a vault link");
       return;
     }
-    const url = `${window.location.origin}/vault/${userId}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Vault link copied successfully.");
-  };
 
-  function formatSize(bytes: number) {
-    const sizes = ["B", "KB", "MB", "GB"];
-    let i = 0;
-    while (bytes >= 1024 && i < sizes.length - 1) {
-      bytes /= 1024;
-      i++;
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/vault/${userId}`,
+      );
+      toast.success("Public vault link copied");
+    } catch {
+      toast.error("Unable to copy the vault link");
     }
-    return `${bytes.toFixed(1)} ${sizes[i]}`;
   }
 
   function validateFile(file: File): string | null {
@@ -201,321 +244,381 @@ export default function UploadPage() {
       return `Unsupported file type (${file.type || "unknown"})`;
     }
     if (file.size > MAX_SIZE) {
-      return `File too large (${formatSize(file.size)}). Max allowed is ${formatSize(MAX_SIZE)}.`;
+      return `File too large (${formatSize(file.size)}). Maximum: ${formatSize(MAX_SIZE)}.`;
     }
     return null;
   }
 
   async function handleFiles(selectedFiles: File[]) {
-    if (loading || !selectedFiles.length || isPublicView) return;
+    if (isUploading || !selectedFiles.length || isPublicView) return;
 
-    const validFiles: File[] = [];
-    for (const file of selectedFiles) {
+    const validFiles = selectedFiles.filter((file) => {
       const error = validateFile(file);
-      if (error) {
-        toast.error(error, { description: file.name });
-      } else {
-        validFiles.push(file);
-      }
-    }
+      if (error) toast.error(error, { description: file.name });
+      return !error;
+    });
 
-    if (validFiles.length === 0) return;
-    setLoading(true);
+    if (!validFiles.length) return;
+    setIsUploading(true);
 
     try {
       for (const file of validFiles) {
-        setUploadingFiles((prev) => [...prev, file.name]);
-
+        setUploadingFiles((previous) => [...previous, file.name]);
         const formData = new FormData();
         formData.append("file", file);
-        if (selectedFolderId) {
-          formData.append("folderId", selectedFolderId);
-        }
+        if (selectedFolderId) formData.append("folderId", selectedFolderId);
 
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15000);
+        const timeout = window.setTimeout(() => controller.abort(), 15000);
 
         try {
-          const res = await fetch("/api/upload", {
+          const response = await fetch("/api/upload", {
             method: "POST",
             body: formData,
             signal: controller.signal,
           });
+          const data = await response.json();
 
-          const data = await res.json();
-          if (!res.ok) {
+          if (!response.ok) {
             toast.error(`${file.name}: ${data.error || "Upload failed"}`);
           } else {
-            toast.success(`${file.name} uploaded`);
+            toast.success(`${file.name} added to ${destinationName}`);
           }
-        } catch (err: any) {
-          if (err.name === "AbortError") {
-            toast.error(`${file.name}: Upload timeout`);
-          } else {
-            toast.error(`${file.name}: Upload failed`);
-          }
+        } catch (error) {
+          toast.error(
+            error instanceof DOMException && error.name === "AbortError"
+              ? `${file.name}: Upload timed out`
+              : `${file.name}: Upload failed`,
+          );
         } finally {
-          clearTimeout(timeout);
-          setUploadingFiles((prev) => prev.filter((f) => f !== file.name));
+          window.clearTimeout(timeout);
+          setUploadingFiles((previous) =>
+            previous.filter((name) => name !== file.name),
+          );
         }
       }
 
-      const refreshed = await fetch("/api/upload");
-
-      if (refreshed.ok) {
-        const data = await refreshed.json();
-        setFiles(data.files);
-        setIsVaultPublic(data.isVaultPublic);
+      const response = await fetch("/api/upload");
+      if (response.ok) {
+        const data = await response.json();
+        setFiles(data.files || []);
+        setIsVaultPublic(Boolean(data.isVaultPublic));
       }
     } catch {
       toast.error("Upload failed");
     } finally {
-      setLoading(false);
+      setIsUploading(false);
     }
   }
 
-  const groupedFiles = useMemo(() => {
-    const rootFiles = files.filter((f) => !f.folderId);
-    const folderGroups = folders
-      .map((folder) => ({
-        ...folder,
-        files: files.filter((f) => f.folderId === folder.id),
-      }))
-      .filter((group) => group.files.length > 0);
+  async function handleAction(id: string, action: "view" | "download") {
+    try {
+      const endpoint = isPublicView
+        ? `/api/public/file/${id}/${action}`
+        : `/api/upload/${id}/${action}`;
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error("Action failed");
+      const { url } = await response.json();
 
-    return { rootFiles, folderGroups };
-  }, [files, folders]);
+      if (action === "view") {
+        router.push(
+          `/file/${id}?${isPublicView ? "public=true" : "from=upload"}`,
+        );
+        return;
+      }
 
-  if (status === "loading") {
-    return (
-      <div className="h-screen flex items-center justify-center animate-pulse text-neutral-400">
-        Syncing vault...
-      </div>
-    );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch {
+      toast.error("Unable to perform action");
+    }
+  }
+
+  function handleRename(file: FileItem) {
+    setModal({
+      isOpen: true,
+      type: "rename",
+      title: "Rename file",
+      message: "Choose a clear name for this file.",
+      file,
+    });
+  }
+
+  function handleShare(id: string) {
+    const file = files.find((item) => item.id === id);
+    setModal({
+      isOpen: true,
+      type: "share",
+      title: "Share file",
+      message: "Select how long the secure link should stay active.",
+      file,
+    });
+  }
+
+  function handleDelete(file: FileItem) {
+    setModal({
+      isOpen: true,
+      type: "confirm",
+      title: "Delete file?",
+      message: `Are you sure you want to permanently delete “${file.name}”?`,
+      file,
+    });
+  }
+
+  async function handleModalConfirm(value?: string) {
+    const file = modal.file;
+    if (!file) return;
+
+    try {
+      if (modal.type === "share") {
+        const response = await fetch("/api/upload/share", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "file",
+            resourceId: file.id,
+            expiresInHours: value === "never" ? null : Number(value),
+          }),
+        });
+        if (!response.ok) throw new Error("Share failed");
+        const { url } = await response.json();
+        await navigator.clipboard.writeText(url);
+        toast.success("Secure link copied");
+      }
+
+      if (modal.type === "rename") {
+        const name = value?.trim();
+        if (!name || name === file.name) {
+          toast.error("Enter a different file name");
+          return;
+        }
+
+        const response = await fetch(`/api/upload/${file.id}/rename`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        if (!response.ok) throw new Error("Rename failed");
+
+        setFiles((previous) =>
+          previous.map((item) =>
+            item.id === file.id ? { ...item, name } : item,
+          ),
+        );
+        toast.success("File renamed");
+      }
+
+      if (modal.type === "confirm") {
+        const response = await fetch(`/api/upload/${file.id}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) throw new Error("Delete failed");
+
+        setFiles((previous) => previous.filter((item) => item.id !== file.id));
+        toast.success("File deleted");
+      }
+    } catch {
+      toast.error("Action failed. Please try again.");
+    } finally {
+      setModal((previous) => ({ ...previous, isOpen: false }));
+    }
+  }
+
+  if (status === "loading" && !isPublicView) {
+    return <VaultLoading />;
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0a0a] transition-colors p-4 md:p-12">
-      <div className="max-w-5xl mx-auto">
-        <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-neutral-100 dark:border-neutral-900 pb-8">
+    <main className="relative min-h-screen overflow-hidden bg-[#FAFAFA] text-neutral-900 dark:bg-[#0A0A0A] dark:text-neutral-100">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -left-[20%] -top-[25%] h-[44rem] w-[44rem] rounded-full bg-blue-400/15 blur-[140px] dark:bg-blue-600/10" />
+        <div className="absolute -right-[20%] top-[35%] h-[36rem] w-[36rem] rounded-full bg-indigo-400/10 blur-[130px] dark:bg-indigo-600/10" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-5 py-7 sm:px-8 md:px-10 md:py-10 lg:px-16 lg:py-14">
+        <motion.header
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.42, ease: "easeOut" }}
+          className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"
+        >
           <div>
-            <div className="flex items-center gap-2 text-blue-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
               <HardDrive size={14} />
-              <span>Digital Asset Manager</span>
+              {isPublicView ? "Shared collection" : "Secure file vault"}
             </div>
-            <h1 className="text-3xl md:text-4xl font-light tracking-tight italic font-serif text-neutral-900 dark:text-white">
-              {isPublicView ? `${ownerName}'s File Vault` : "My File Vault"}
+            <h1 className="mt-3 font-serif text-4xl font-light tracking-tight text-neutral-900 sm:text-5xl dark:text-white">
+              {isPublicView ? (
+                <>
+                  <span className="italic">{ownerName}&apos;s</span> vault
+                </>
+              ) : (
+                <>
+                  Your <span className="italic">vault</span>
+                </>
+              )}
             </h1>
-            {!isPublicView && (
-              <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm flex items-center gap-2">
-                Logged in as{" "}
-                <span className="font-medium text-neutral-800 dark:text-neutral-200">
-                  {session?.user?.email}
-                </span>
-              </p>
-            )}
+            <p className="mt-3 max-w-xl text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+              {isPublicView
+                ? "Browse the files that have been shared with you."
+                : "Store, organize, and share the files that matter to your work."}
+            </p>
           </div>
 
           {!isPublicView && (
-            <div className="flex items-center gap-4 mt-2 md:mt-0 bg-neutral-50/50 dark:bg-neutral-900/30 p-2 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 backdrop-blur-sm">
-              {/* Refined Public Toggle */}
-              <div className="flex items-center gap-3 px-3 py-1.5">
-                <button
-                  onClick={handleTogglePublic}
-                  className={`relative flex items-center w-11 h-6 rounded-full transition-colors duration-300  ${
+            <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-neutral-200/80 bg-white/70 p-2 shadow-sm backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-900/65">
+              <button
+                type="button"
+                onClick={handleTogglePublic}
+                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-colors ${isVaultPublic ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" : "text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"}`}
+              >
+                {isVaultPublic ? <Globe size={15} /> : <Lock size={15} />}
+                <span>{isVaultPublic ? "Public vault" : "Private vault"}</span>
+                <span
+                  className={`relative cursor-pointer inline-flex h-4 w-8 rounded-full transition-all duration-300 ${
                     isVaultPublic
-                      ? "bg-blue-500"
+                      ? "bg-emerald-500"
                       : "bg-neutral-300 dark:bg-neutral-700"
                   }`}
                 >
                   <span
-                    className={`absolute left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-sm ${
-                      isVaultPublic ? "translate-x-5" : "translate-x-0"
+                    className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-all duration-300 ${
+                      isVaultPublic ? "translate-x-4" : "translate-x-1"
                     }`}
                   />
-                </button>
-                <div className="flex items-center gap-1.5 w-20">
-                  {isVaultPublic ? (
-                    <Globe size={14} className="text-blue-500" />
-                  ) : (
-                    <Lock
-                      size={14}
-                      className="text-neutral-400 dark:text-neutral-500"
-                    />
-                  )}
-                  <span
-                    className={`text-[11px] font-bold uppercase tracking-wider ${
-                      isVaultPublic
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-neutral-500 dark:text-neutral-400"
-                    }`}
-                  >
-                    {isVaultPublic ? "Public" : "Private"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="w-px h-8 bg-neutral-200 dark:bg-neutral-800" />
-
+                </span>
+              </button>
               <button
+                type="button"
                 onClick={handleShareVault}
                 disabled={!isVaultPublic}
-                title={
-                  !isVaultPublic
-                    ? "Enable Public Vault to generate a share link."
-                    : "Copy public vault link"
-                }
-                className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-widest shadow-sm transition-all active:scale-95 ${
-                  isVaultPublic
-                    ? "bg-white dark:bg-[#111] text-neutral-900 dark:text-white border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 cursor-pointer"
-                    : "bg-neutral-100 dark:bg-neutral-900 text-neutral-400 dark:text-neutral-600 border-neutral-200 dark:border-neutral-800 cursor-not-allowed opacity-60"
-                }`}
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
-                <Share2
-                  size={14}
-                  className={
-                    isVaultPublic
-                      ? "transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                      : ""
-                  }
-                />
-                Share Link
+                <Share2 size={15} />
+                Copy link
               </button>
             </div>
           )}
-        </header>
+        </motion.header>
 
-        <div className="mb-8">
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `
-        .premium-scrollbar::-webkit-scrollbar {
-          height: 4px;
-        }
-
-        .premium-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .premium-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(140,140,140,0.2);
-          border-radius: 999px;
-        }
-
-        .premium-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(140,140,140,0.4);
-        }
-      `,
-            }}
-          />
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-              {isPublicView ? "Browsing Directory" : "Target Directory"}
-            </h2>
+        <motion.section
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.06, duration: 0.42, ease: "easeOut" }}
+          className="mt-8 overflow-hidden rounded-[1.75rem] border border-neutral-200/80 bg-white/65 p-4 shadow-lg shadow-neutral-200/20 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-900/60 dark:shadow-none sm:p-5"
+        >
+          <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+                {isPublicView ? "Folder collection" : "Upload destination"}
+              </p>
+              <h2 className="mt-1 flex items-center gap-2 font-serif text-2xl tracking-tight text-neutral-800 dark:text-neutral-100">
+                <FolderOpen size={19} className="text-blue-500" />
+                {isPublicView ? "Browse folders" : destinationName}
+              </h2>
+            </div>
             {!isPublicView && (
               <button
+                type="button"
                 onClick={() => setFolderModalOpen(true)}
-                className="text-[11px] font-bold uppercase tracking-wider text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1.5 transition-colors"
+                className="flex cursor-pointer items-center justify-center gap-2 self-start rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 sm:self-auto"
               >
-                <FolderPlus size={14} />
-                New Folder
+                <FolderPlus size={15} className="text-blue-500" />
+                New folder
               </button>
             )}
           </div>
 
-          <div className="relative w-full overflow-hidden group">
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#FDFDFD] dark:from-[#0a0a0a] to-transparent z-10" />
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#FDFDFD] dark:from-[#0a0a0a] to-transparent z-10" />
-
-            <div className="flex items-center gap-2 overflow-x-auto pb-4 pt-1 px-4 -mx-4 premium-scrollbar snap-x">
-              <button
-                onClick={() => setSelectedFolderId(null)}
-                className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
-                  selectedFolderId === null
-                    ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-md"
-                    : "bg-white dark:bg-[#111] text-neutral-500 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm"
-                }`}
-              >
-                <HardDrive size={14} />
-                Main Vault
-              </button>
-
-              {loadingFolders ? (
-                <div className="flex items-center px-4">
-                  <Loader2
-                    size={16}
-                    className="animate-spin text-neutral-300"
-                  />
-                </div>
-              ) : (
-                folders.map((folder) => (
-                  <button
+          <div className="mt-5 flex gap-3 overflow-x-auto pb-1 pt-1 [scrollbar-width:thin]">
+            <DestinationCard
+              active={selectedFolderId === null}
+              title="Main vault"
+              subtitle={`${groupedFiles.rootFiles.length} file${groupedFiles.rootFiles.length === 1 ? "" : "s"}`}
+              icon={<HardDrive size={18} />}
+              onClick={() => setSelectedFolderId(null)}
+            />
+            {loadingFolders ? (
+              <div className="flex min-w-36 items-center justify-center rounded-2xl border border-neutral-200 bg-white/60 dark:border-neutral-800 dark:bg-neutral-900/50">
+                <Loader2 size={18} className="animate-spin text-neutral-400" />
+              </div>
+            ) : (
+              folders.map((folder) => {
+                const count = files.filter(
+                  (file) => file.folderId === folder.id,
+                ).length;
+                return (
+                  <DestinationCard
                     key={folder.id}
+                    active={selectedFolderId === folder.id}
+                    title={folder.name}
+                    subtitle={`${count} file${count === 1 ? "" : "s"}`}
+                    icon={
+                      selectedFolderId === folder.id ? (
+                        <FolderOpen size={18} />
+                      ) : (
+                        <Folder size={18} />
+                      )
+                    }
                     onClick={() => setSelectedFolderId(folder.id)}
-                    className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
-                      selectedFolderId === folder.id
-                        ? "bg-neutral-900 dark:bg-white text-white dark:text-black shadow-md"
-                        : "bg-white dark:bg-[#111] text-neutral-500 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm"
-                    }`}
-                  >
-                    {selectedFolderId === folder.id ? (
-                      <FolderOpen size={14} />
-                    ) : (
-                      <Folder size={14} />
-                    )}
-                    {folder.name}
-                  </button>
-                ))
-              )}
-            </div>
+                  />
+                );
+              })
+            )}
+            {!isPublicView && (
+              <button
+                type="button"
+                onClick={() => setFolderModalOpen(true)}
+                className="flex cursor-pointer min-w-36 flex-col items-start justify-between rounded-2xl border border-dashed border-neutral-300 bg-white/40 p-4 text-left text-neutral-400 transition-colors hover:border-blue-500/50 hover:bg-blue-50/50 hover:text-blue-500 dark:border-neutral-700 dark:bg-neutral-900/30 dark:hover:bg-blue-500/5"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-800">
+                  <FolderPlus size={17} />
+                </span>
+                <span className="mt-4 text-xs font-semibold">
+                  Create folder
+                </span>
+              </button>
+            )}
           </div>
-        </div>
+        </motion.section>
 
         {!isPublicView && (
-          <div className="relative w-full mb-16">
+          <section className="mt-6">
             <AnimatePresence mode="wait">
-              {loading ? (
+              {isUploading ? (
                 <motion.div
                   key="uploading"
-                  initial={{ opacity: 0, scale: 0.98 }}
+                  initial={{ opacity: 0, scale: 0.985 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="relative rounded-[2.5rem] p-14 flex flex-col items-center justify-center bg-white/70 dark:bg-[#0f0f0f]/70 backdrop-blur-2xl border border-neutral-200/60 dark:border-neutral-800/60 shadow-xl overflow-hidden"
+                  exit={{ opacity: 0, scale: 0.985 }}
+                  className="relative overflow-hidden rounded-[2rem] border border-neutral-200/80 bg-white/70 p-10 shadow-xl shadow-neutral-200/20 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-900/65 dark:shadow-none sm:p-14"
                 >
-                  <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-150 h-150 bg-blue-500/10 blur-[120px] rounded-full" />
-                  </div>
-                  <div className="relative z-10 flex flex-col items-center w-full max-w-sm">
-                    <motion.div
-                      animate={{ y: [0, -6, 0] }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                      className="relative mb-8"
-                    >
-                      <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full opacity-60" />
-                      <div className="relative p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm text-blue-500">
-                        <Upload size={30} />
-                      </div>
-                    </motion.div>
-                    <motion.h3
-                      className="text-xl font-medium tracking-tight font-serif italic text-neutral-900 dark:text-white mb-2"
-                      animate={{ opacity: [0.6, 1, 0.6] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      Uploading Securely
-                    </motion.h3>
-                    <p className="text-[11px] uppercase tracking-[0.25em] font-semibold text-blue-500/70 mb-8">
-                      Encrypting & Syncing
+                  <div className="absolute left-1/2 top-0 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-3xl" />
+                  <div className="relative mx-auto flex max-w-md flex-col items-center text-center">
+                    <div className="relative mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-neutral-200 bg-white text-blue-500 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                      <Loader2 size={27} className="animate-spin" />
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                      Secure transfer
                     </p>
-                    <div className="w-full h-1 bg-neutral-200/60 dark:bg-neutral-800 rounded-full overflow-hidden">
+                    <h2 className="mt-2 font-serif text-2xl tracking-tight text-neutral-800 dark:text-white">
+                      Adding files to {destinationName}
+                    </h2>
+                    <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+                      {uploadingFiles[0] || "Preparing upload"}
+                      {uploadingFiles.length > 1
+                        ? ` and ${uploadingFiles.length - 1} more`
+                        : ""}
+                    </p>
+                    <div className="mt-7 h-1.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                       <motion.div
                         initial={{ width: "0%" }}
                         animate={{ width: "100%" }}
-                        transition={{ duration: 3.5, ease: "easeInOut" }}
-                        className="relative h-full bg-linear-to-r from-blue-500 to-indigo-500"
+                        transition={{ duration: 2.6, ease: "easeInOut" }}
+                        className="h-full bg-linear-to-r from-blue-500 to-indigo-500"
                       />
                     </div>
                   </div>
@@ -525,346 +628,429 @@ export default function UploadPage() {
                   key="idle"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
+                  onDragOver={(event) => {
+                    event.preventDefault();
                     setIsDragging(true);
                   }}
                   onDragLeave={() => setIsDragging(false)}
-                  onDrop={(e) => {
-                    e.preventDefault();
+                  onDrop={(event) => {
+                    event.preventDefault();
                     setIsDragging(false);
-                    if (e.dataTransfer.files.length > 0)
-                      handleFiles(Array.from(e.dataTransfer.files));
+                    if (event.dataTransfer.files.length)
+                      void handleFiles(Array.from(event.dataTransfer.files));
                   }}
-                  className={`min-h-[280px] relative group border-2 border-dashed rounded-[2.5rem] p-12 transition-all duration-500 flex flex-col items-center justify-center bg-white dark:bg-[#0d0d0d] ${
-                    isDragging
-                      ? "border-blue-500 bg-blue-50/30 dark:bg-blue-900/10 scale-[0.99] shadow-2xl shadow-blue-500/5"
-                      : "border-neutral-200 dark:border-neutral-800 shadow-xl shadow-neutral-100 dark:shadow-none hover:border-neutral-300 dark:hover:border-neutral-700"
-                  }`}
+                  className={`group relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed p-8 text-center transition-all duration-300 sm:p-12 ${isDragging ? "scale-[0.99] border-blue-500 bg-blue-50/50 shadow-xl shadow-blue-500/10 dark:bg-blue-500/10" : "border-neutral-200 bg-white/65 shadow-lg shadow-neutral-200/15 hover:border-neutral-300 hover:bg-white dark:border-neutral-800 dark:bg-neutral-900/60 dark:shadow-none dark:hover:border-neutral-700"}`}
                 >
+                  <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl" />
                   <motion.div
                     animate={
-                      isDragging ? { scale: 1.2, rotate: 5 } : { scale: 1 }
-                    }
-                    className={`p-5 rounded-[1.8rem] mb-5 transition-colors shadow-sm ${
                       isDragging
-                        ? "bg-blue-500 text-white"
-                        : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400 group-hover:text-blue-500"
-                    }`}
+                        ? { scale: 1.12, rotate: 4 }
+                        : { scale: 1, rotate: 0 }
+                    }
+                    className={`relative flex h-16 w-16 items-center justify-center rounded-2xl border shadow-sm transition-colors ${isDragging ? "border-blue-500 bg-blue-500 text-white" : "border-neutral-200 bg-white text-neutral-400 group-hover:text-blue-500 dark:border-neutral-800 dark:bg-neutral-900"}`}
                   >
-                    <Upload size={32} />
+                    <Upload size={27} />
                   </motion.div>
-                  <h3 className="text-lg font-medium mb-1 tracking-tight">
-                    {isDragging ? "Drop to secure" : "Drop file to store"}
-                  </h3>
-                  <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-400 mb-8 text-center max-w-xs">
-                    Targeting:{" "}
-                    {selectedFolderId
-                      ? folders.find((f) => f.id === selectedFolderId)?.name
-                      : "Main Vault"}
-                  </p>
-                  <label className="cursor-pointer bg-black dark:bg-white text-white dark:text-black px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:opacity-80 transition-all active:scale-95 shadow-lg shadow-black/5 dark:shadow-none">
-                    Browse File
+                  <div className="relative mt-5">
+                    <p className="font-serif text-2xl tracking-tight text-neutral-800 dark:text-white">
+                      {isDragging
+                        ? "Drop to upload"
+                        : "Bring files into your vault"}
+                    </p>
+                    <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+                      Drag files here, or choose them from your device.
+                    </p>
+                  </div>
+                  <div className="relative mt-5 flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400">
+                    <FolderOpen size={13} />
+                    Uploading to {destinationName}
+                  </div>
+                  <label className="relative mt-6 flex cursor-pointer items-center gap-2 rounded-xl bg-neutral-900 px-5 py-3 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-85 active:scale-[0.98] dark:bg-white dark:text-black">
+                    <Upload size={15} />
+                    Choose files
                     <input
                       type="file"
                       multiple
                       className="hidden"
                       accept=".pdf,.doc,.docx,.pptx,.txt,.jpg,.jpeg,.png,.webp,.gif,.zip"
-                      onChange={(e) => {
-                        if (!e.target.files) return;
-                        handleFiles(Array.from(e.target.files));
-                        e.target.value = "";
+                      onChange={(event) => {
+                        if (!event.target.files) return;
+                        void handleFiles(Array.from(event.target.files));
+                        event.target.value = "";
                       }}
                     />
                   </label>
+                  <p className="relative mt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-400">
+                    PDF, Office, images, text & archives · up to{" "}
+                    {formatSize(MAX_SIZE)}
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </section>
         )}
 
-        <div>
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `
-    .premium-scrollbar::-webkit-scrollbar {
-      width: 4px;
-    }
-    .premium-scrollbar::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .premium-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(140, 140, 140, 0.2);
-      border-radius: 10px;
-    }
-    .premium-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: rgba(140, 140, 140, 0.4);
-    }
-  `,
-            }}
-          />
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-neutral-400 shrink-0">
-              Vault Contents ({files.length})
-            </h2>
-            <div className="h-[1px] flex-1 bg-neutral-100 dark:bg-neutral-900 mx-6" />
-          </div>
-
-          <div className="space-y-12">
-            {files.length === 0 && (
-              <p className="text-center py-10 text-neutral-400 italic font-serif">
-                The vault is currently empty.
+        <section className="mt-10 md:mt-14">
+          <div className="mb-5 flex items-end gap-4 px-1">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+                {isPublicView ? "Shared assets" : "Vault contents"}
               </p>
-            )}
-
-            {groupedFiles.folderGroups.map((group) => (
-              <div key={group.id} className="space-y-4">
-                <div className="flex items-center gap-3 px-2">
-                  <FolderOpen size={16} className="text-blue-500" />
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-300">
-                    {group.name}
-                  </h3>
-                  <span className="text-[10px] text-neutral-400 font-medium bg-neutral-100 dark:bg-neutral-900 px-2 py-0.5 rounded-md">
-                    {group.files.length}
-                  </span>
-                </div>
-                <div className="space-y-3 max-h-80 overflow-y-auto pr-2 premium-scrollbar scroll-smooth">
-                  {group.files.map((f) => (
-                    <FileRow key={f.id} file={f} />
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {/* Render Main Vault / Uncategorized files */}
-            {groupedFiles.rootFiles.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 px-2">
-                  <HardDrive size={16} className="text-neutral-400" />
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-500">
-                    Main Vault
-                  </h3>
-                </div>
-                <div className="space-y-3">
-                  {groupedFiles.rootFiles.map((f) => (
-                    <FileRow key={f.id} file={f} />
-                  ))}
-                </div>
-              </div>
-            )}
+              <h2 className="mt-1 font-serif text-2xl tracking-tight text-neutral-800 dark:text-neutral-100">
+                {files.length} file{files.length === 1 ? "" : "s"} in your
+                collection
+              </h2>
+            </div>
+            <div className="mb-2 h-px flex-1 bg-neutral-200/70 dark:bg-neutral-800" />
           </div>
-        </div>
 
-        {/* Modals */}
-        <CustomModal
-          isOpen={folderModalOpen}
-          onClose={() => setFolderModalOpen(false)}
-          type="folder"
-          title="Create Directory"
-          message="Enter a name for your secure folder."
-          onConfirm={handleCreateFolder}
-        />
-        <CustomModal
-          isOpen={modal.isOpen}
-          onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}
-          type={modal.type}
-          title={modal.title}
-          message={modal.message}
-          defaultValue={modal.file?.name}
-          onConfirm={handleModalConfirm}
-        />
-      </div>
-    </div>
-  );
-
-  function FileRow({ file: f }: { file: FileItem }) {
-    return (
-      <motion.div
-        layout
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="group bg-white dark:bg-[#0d0d0d] border border-neutral-100 dark:border-neutral-800 p-3 md:p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between hover:border-neutral-300 dark:hover:border-neutral-600 transition-all shadow-sm gap-4 ml-4 md:ml-6"
-      >
-        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-          <div className="w-10 h-10 shrink-0 bg-neutral-50 dark:bg-neutral-900 rounded-xl flex items-center justify-center text-neutral-400 group-hover:text-blue-500 transition-colors">
-            <File size={18} />
-          </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-medium truncate pr-2 text-neutral-900 dark:text-white">
-              {f.name}
-            </p>
-            <p className="text-[10px] text-neutral-400 uppercase tracking-tighter font-bold">
-              {formatSize(f.size)} •{" "}
-              {new Date(f.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between sm:justify-end gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-neutral-50 dark:border-neutral-900">
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-            <FileActionBtn
-              icon={<Eye size={16} />}
-              onClick={() => handleAction(f.id, "view")}
-              label="View"
+          {files.length === 0 && !loadingFolders ? (
+            <EmptyVault
+              isPublicView={isPublicView}
+              destinationName={destinationName}
             />
-            {!isPublicView && (
-              <FileActionBtn
-                icon={<Type size={16} />}
-                onClick={() => handleRename(f)}
-                label="Rename"
+          ) : (
+            <div className="space-y-9">
+              <style
+                dangerouslySetInnerHTML={{
+                  __html: `
+      .premium-scrollbar{
+        scrollbar-width:thin;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar{
+        width:6px;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-track{
+        background:transparent;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-thumb{
+        border-radius:999px;
+        border:2px solid transparent;
+        background-clip:padding-box;
+        transition:all .25s ease;
+      }
+
+      /* Light */
+      .premium-scrollbar::-webkit-scrollbar-thumb{
+        background-color:rgba(0,0,0,.14);
+      }
+
+      .premium-scrollbar:hover::-webkit-scrollbar-thumb{
+        background-color:rgba(0,0,0,.28);
+      }
+
+      /* Dark */
+      .dark .premium-scrollbar::-webkit-scrollbar-thumb{
+        background-color:rgba(255,255,255,.12);
+      }
+
+      .dark .premium-scrollbar:hover::-webkit-scrollbar-thumb{
+        background-color:rgba(255,255,255,.25);
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-thumb:active{
+        background-color:rgba(59,130,246,.65);
+      }
+    `,
+                }}
               />
-            )}
-            <FileActionBtn
-              icon={<Download size={16} />}
-              onClick={() => handleAction(f.id, "download")}
-              label="Save"
-            />
-            {!isPublicView && (
-              <FileActionBtn
-                icon={<Share2 size={16} />}
-                onClick={() => handleShare(f.id)}
-                label="Share"
-              />
-            )}
-          </div>
-          {!isPublicView && (
-            <>
-              <div className="w-px h-4 bg-neutral-100 dark:bg-neutral-800 mx-1 md:mx-2 shrink-0" />
-              <button
-                onClick={() => handleDelete(f)}
-                className="p-2 cursor-pointer text-neutral-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all shrink-0"
-              >
-                <Trash2 size={16} />
-              </button>
-            </>
+              {groupedFiles.rootFiles.length > 0 && (
+                <FileGroup
+                  title="Main vault"
+                  icon={<HardDrive size={15} className="text-neutral-400" />}
+                  count={groupedFiles.rootFiles.length}
+                >
+                  <div className="p-2 premium-scrollbar space-y-3 max-h-70 overflow-y-auto">
+                    {groupedFiles.rootFiles.map((file) => (
+                      <FileRow
+                        key={file.id}
+                        file={file}
+                        isPublicView={isPublicView}
+                        onView={() => void handleAction(file.id, "view")}
+                        onDownload={() =>
+                          void handleAction(file.id, "download")
+                        }
+                        onRename={() => handleRename(file)}
+                        onShare={() => handleShare(file.id)}
+                        onDelete={() => handleDelete(file)}
+                      />
+                    ))}
+                  </div>
+                </FileGroup>
+              )}
+              {groupedFiles.folderGroups.map((group) => (
+                <FileGroup
+                  key={group.id}
+                  title={group.name}
+                  icon={<FolderOpen size={15} className="text-blue-500" />}
+                  count={group.files.length}
+                >
+                  <div className="p-2 premium-scrollbar space-y-3 max-h-70 overflow-y-auto">
+                    {group.files.map((file) => (
+                      <FileRow
+                        key={file.id}
+                        file={file}
+                        isPublicView={isPublicView}
+                        onView={() => void handleAction(file.id, "view")}
+                        onDownload={() =>
+                          void handleAction(file.id, "download")
+                        }
+                        onRename={() => handleRename(file)}
+                        onShare={() => handleShare(file.id)}
+                        onDelete={() => handleDelete(file)}
+                      />
+                    ))}
+                  </div>
+                </FileGroup>
+              ))}
+            </div>
           )}
-        </div>
-      </motion.div>
-    );
-  }
+        </section>
+      </div>
 
-  async function handleAction(id: string, action: string) {
-    try {
-      const res = await fetch(`/api/upload/${id}/${action}`);
-      if (!res.ok) throw new Error("Action failed");
-      const { url } = await res.json();
-      if (action === "view") router.push(`/file/${id}?from=upload`);
-      if (action === "download") {
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }
-    } catch {
-      toast.error("Unable to perform action");
-    }
-  }
-
-  function handleRename(f: FileItem) {
-    setModal({
-      isOpen: true,
-      type: "rename",
-      title: "Rename File",
-      message: "Enter a new name for this file.",
-      file: f,
-    });
-  }
-
-  function handleShare(id: string) {
-    const file = files.find((f) => f.id === id);
-    setModal({
-      isOpen: true,
-      type: "share",
-      title: "Share File",
-      message: "Select expiry duration",
-      file,
-    });
-  }
-
-  function handleDelete(f: FileItem) {
-    setModal({
-      isOpen: true,
-      type: "confirm",
-      title: "Delete File",
-      message: "Are you sure you want to delete this file permanently?",
-      file: f,
-    });
-  }
-
-  async function handleModalConfirm(value?: string) {
-    if (!modal.file) return;
-    try {
-      if (modal.type === "share") {
-        const expiresInHours = value === "never" ? null : Number(value);
-        const res = await fetch("/api/upload/share", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "file",
-            resourceId: modal.file.id,
-            expiresInHours,
-          }),
-        });
-        if (!res.ok) throw new Error("Share failed");
-        const { url } = await res.json();
-        await navigator.clipboard.writeText(url);
-        toast.success("Share link copied!");
-      }
-      if (modal.type === "rename") {
-        if (!value || value.trim() === modal.file.name) {
-          toast.error("Invalid file name");
-          return;
-        }
-        const res = await fetch(`/api/upload/${modal.file.id}/rename`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: value.trim() }),
-        });
-        if (!res.ok) throw new Error();
-        setFiles((prev) =>
-          prev.map((x) =>
-            x.id === modal.file?.id ? { ...x, name: value.trim() } : x,
-          ),
-        );
-        toast.success("File renamed successfully");
-      }
-      if (modal.type === "confirm") {
-        const res = await fetch(`/api/upload/${modal.file.id}`, {
-          method: "DELETE",
-        });
-        if (!res.ok) throw new Error();
-        setFiles((prev) => prev.filter((x) => x.id !== modal.file?.id));
-        toast.success("File deleted successfully");
-      }
-    } catch {
-      toast.error("Action failed. Please try again.");
-    } finally {
-      setModal((prev) => ({ ...prev, isOpen: false }));
-    }
-  }
+      <CustomModal
+        isOpen={folderModalOpen}
+        onClose={() => setFolderModalOpen(false)}
+        type="folder"
+        title="Create folder"
+        message="Give this secure folder a clear name."
+        onConfirm={handleCreateFolder}
+      />
+      <CustomModal
+        isOpen={modal.isOpen}
+        onClose={() => setModal((previous) => ({ ...previous, isOpen: false }))}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+        defaultValue={modal.file?.name}
+        onConfirm={handleModalConfirm}
+      />
+    </main>
+  );
 }
 
-function FileActionBtn({
+function DestinationCard({
+  active,
+  title,
+  subtitle,
   icon,
   onClick,
-  label,
 }: {
-  icon: any;
+  active: boolean;
+  title: string;
+  subtitle: string;
+  icon: ReactNode;
   onClick: () => void;
-  label: string;
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="flex cursor-pointer items-center gap-2 p-2 px-2 md:px-3 text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-900 rounded-lg transition-all"
+      className={`relative cursor-pointer flex min-w-36 flex-col items-start overflow-hidden rounded-2xl border p-4 text-left transition-all duration-200 ${active ? "border-neutral-900 bg-neutral-900 text-white shadow-md dark:border-white dark:bg-white dark:text-black" : "border-neutral-200 bg-white/75 text-neutral-600 shadow-sm hover:-translate-y-0.5 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900/65 dark:text-neutral-300 dark:hover:border-neutral-700"}`}
     >
-      {icon}
-      <span className="text-[10px] font-bold uppercase tracking-wider hidden xl:block">
-        {label}
+      {active && (
+        <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-white/15 dark:bg-black/10">
+          <Check size={13} />
+        </span>
+      )}
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-xl ${active ? "bg-white/15 dark:bg-black/10" : "bg-neutral-100 text-blue-500 dark:bg-neutral-800"}`}
+      >
+        {icon}
+      </span>
+      <span className="mt-4 max-w-full truncate text-xs font-semibold">
+        {title}
+      </span>
+      <span
+        className={`mt-1 text-[10px] font-bold uppercase tracking-wider ${active ? "text-white/65 dark:text-black/55" : "text-neutral-400 dark:text-neutral-500"}`}
+      >
+        {subtitle}
       </span>
     </button>
+  );
+}
+
+function FileGroup({
+  title,
+  icon,
+  count,
+  children,
+}: {
+  title: string;
+  icon: ReactNode;
+  count: number;
+  children: ReactNode;
+}) {
+  return (
+    <section>
+      <div className="mb-3 flex items-center gap-2.5 px-1">
+        {icon}
+        <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-600 dark:text-neutral-300">
+          {title}
+        </h3>
+        <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
+          {count}
+        </span>
+      </div>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
+}
+
+function FileRow({
+  file,
+  isPublicView,
+  onView,
+  onDownload,
+  onRename,
+  onShare,
+  onDelete,
+}: {
+  file: FileItem;
+  isPublicView: boolean;
+  onView: () => void;
+  onDownload: () => void;
+  onRename: () => void;
+  onShare: () => void;
+  onDelete: () => void;
+}) {
+  const extension = file.name.split(".").pop()?.toUpperCase() || "FILE";
+  const createdAt = new Date(file.createdAt).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative overflow-hidden rounded-2xl border border-neutral-200/80 bg-white/70 p-3 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md dark:border-neutral-800/80 dark:bg-neutral-900/65 dark:hover:border-neutral-700"
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-100 bg-neutral-50 text-neutral-400 transition-colors group-hover:text-blue-500 dark:border-neutral-800 dark:bg-neutral-800/70">
+            <File size={18} />
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+              {file.name}
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-bold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+              <span>{extension}</span>
+              <span className="h-1 w-1 rounded-full bg-neutral-300 dark:bg-neutral-700" />
+              <span>{formatSize(file.size)}</span>
+              <span className="h-1 w-1 rounded-full bg-neutral-300 dark:bg-neutral-700" />
+              <span>{createdAt}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 border-t border-neutral-100 pt-3 sm:border-t-0 sm:pt-0 dark:border-neutral-800">
+          <FileActionButton
+            label="View"
+            icon={<Eye size={15} />}
+            onClick={onView}
+          />
+          {!isPublicView && (
+            <FileActionButton
+              label="Rename"
+              icon={<Type size={15} />}
+              onClick={onRename}
+            />
+          )}
+          <FileActionButton
+            label="Download"
+            icon={<Download size={15} />}
+            onClick={onDownload}
+            primary
+          />
+          {!isPublicView && (
+            <FileActionButton
+              label="Share"
+              icon={<Share2 size={15} />}
+              onClick={onShare}
+            />
+          )}
+          {!isPublicView && (
+            <button
+              type="button"
+              aria-label="Delete file"
+              onClick={onDelete}
+              className="ml-1 cursor-pointer rounded-xl p-2.5 text-neutral-300 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:text-neutral-600 dark:hover:bg-rose-500/10"
+            >
+              <Trash2 size={15} />
+            </button>
+          )}
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+function FileActionButton({
+  label,
+  icon,
+  onClick,
+  primary = false,
+}: {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+  primary?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={`flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${primary ? "bg-neutral-900 text-white shadow-sm hover:opacity-80 dark:bg-white dark:text-black" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"}`}
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+    </button>
+  );
+}
+
+function EmptyVault({
+  isPublicView,
+  destinationName,
+}: {
+  isPublicView: boolean;
+  destinationName: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-200 bg-white/45 px-6 py-14 text-center backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/35">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
+        <HardDrive size={20} />
+      </div>
+      <h3 className="mt-4 font-serif text-xl text-neutral-700 dark:text-neutral-300">
+        {isPublicView
+          ? "Nothing has been shared yet"
+          : `${destinationName} is ready`}
+      </h3>
+      <p className="mt-1 text-sm text-neutral-400 dark:text-neutral-500">
+        {isPublicView
+          ? "Check back once files are added to this collection."
+          : "Choose a destination above, then drop in your first file."}
+      </p>
+    </div>
+  );
+}
+
+function VaultLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] dark:bg-[#0A0A0A]">
+      <div className="flex flex-col items-center">
+        <Loader2 size={28} className="animate-spin text-blue-500" />
+        <p className="mt-4 font-serif text-lg italic text-neutral-500">
+          Opening your vault
+        </p>
+      </div>
+    </div>
   );
 }
