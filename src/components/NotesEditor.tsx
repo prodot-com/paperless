@@ -1,541 +1,600 @@
-    "use client";
+"use client";
 
-    import { useState, useEffect, useRef, useMemo } from "react";
-    import { toast } from "sonner";
-    import {
-    Loader2,
-    Trash2,
-    Plus,
-    FileText,
-    Search,
-    Clock,
-    X,
-    ChevronLeft,
-    MoreVertical,
-    Menu,
-    RefreshCw,
-    Link as LinkIcon,
-    RefreshCcw,
-    Eye,
-    EyeOff,
-    ExternalLink,
-    } from "lucide-react";
-    import { motion, AnimatePresence } from "framer-motion";
-    import CustomModal from "./CustomModal";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Check,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  FileText,
+  Link2,
+  Loader2,
+  Menu,
+  PenLine,
+  Plus,
+  RefreshCcw,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
+import CustomModal from "./CustomModal";
 
-    type Note = {
-    id: string;
-    title: string;
-    content: string;
-    };
+type Note = {
+  id: string;
+  title: string;
+  content: string;
+};
 
-    export default function NotesEditor({
-    initialNotes,
-    initialActiveId,
-    }: {
-    initialNotes: Note[];
-    initialActiveId?: string | null;
-    }) {
-    const [notes, setNotes] = useState(initialNotes);
-    const [activeId, setActiveId] = useState<string | null>(
-        initialActiveId ?? null
-    );
-    const [isSaving, setIsSaving] = useState(false);
-    const [lastSaved, setLastSaved] = useState<Date | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [linkPreviews, setLinkPreviews] = useState<Record<string, any>>({});
-    const [openPreviews, setOpenPreviews] = useState(false);
+type LinkPreview = {
+  title?: string;
+  description?: string;
+  image?: string;
+};
 
-    const previousId = useRef<string | null>(null);
-    const debounceRef = useRef<NodeJS.Timeout | null>(null);
+type ModalState = {
+  isOpen: boolean;
+  type: "confirm" | "error";
+  title: string;
+  message: string;
+  onConfirm?: () => void | Promise<void>;
+};
 
-    const [modal, setModal] = useState<{
-        isOpen: boolean;
-        type: "confirm" | "error";
-        title: string;
-        message: string;
-        onConfirm?: () => void;
-    }>({
-        isOpen: false,
-        type: "confirm",
-        title: "",
-        message: "",
+function cleanUrl(url: string) {
+  return url.replace(/[),.]+$/, "");
+}
+
+function extractUrls(text: string) {
+  const matches = text.match(/https?:\/\/[^\s]+/g) || [];
+  return [...new Set(matches.map(cleanUrl))];
+}
+
+function noteExcerpt(content: string) {
+  const excerpt = content.replace(/\s+/g, " ").trim();
+  return excerpt ? excerpt.slice(0, 72) : "No thoughts yet…";
+}
+
+function wordCount(content: string) {
+  const words = content.trim().split(/\s+/).filter(Boolean);
+  return words.length;
+}
+
+function timeLabel(date: Date | null) {
+  if (!date) return "Not saved yet";
+  return `Saved ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+export default function NotesEditor({
+  initialNotes,
+  initialActiveId,
+}: {
+  initialNotes: Note[];
+  initialActiveId?: string | null;
+}) {
+  const [notes, setNotes] = useState(initialNotes);
+  const [activeId, setActiveId] = useState<string | null>(initialActiveId ?? null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreview>>({});
+  const [openPreviews, setOpenPreviews] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const previousId = useRef<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestedPreviews = useRef(new Set<string>());
+
+  const [modal, setModal] = useState<ModalState>({
+    isOpen: false,
+    type: "confirm",
+    title: "",
+    message: "",
+  });
+
+  const activeNote = useMemo(
+    () => notes.find((note) => note.id === activeId),
+    [activeId, notes],
+  );
+
+  const filteredNotes = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return notes;
+
+    return notes.filter((note) => {
+      const content = note.content.slice(0, 700).toLowerCase();
+      return note.title.toLowerCase().includes(query) || content.includes(query);
     });
+  }, [notes, searchQuery]);
 
-    const activeNote = notes.find((n) => n.id === activeId);
+  const activeUrls = useMemo(
+    () => extractUrls(activeNote?.content || ""),
+    [activeNote?.content],
+  );
+  const showingPreviews = openPreviews && activeUrls.length > 0;
 
-    useEffect(() => {
-        const saved = localStorage.getItem("activeNote");
-        const isMobile = window.innerWidth < 768;
+  const saveNote = useCallback(async (note: Note) => {
+    try {
+      setIsSaving(true);
+      const response = await fetch(`/api/notes/${note.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: note.title, content: note.content }),
+      });
 
-        if (!isMobile && saved) {
-        setActiveId(saved);
-        }
-
-        if (isMobile) {
-        setSidebarOpen(true);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (activeId) {
-        localStorage.setItem("activeNote", activeId);
-        }
-    }, [activeId]);
-
-    const filteredNotes = useMemo(() => {
-        const searchStr = searchQuery.toLowerCase();
-        return notes.filter((note) => {
-        const safeContent = note.content.slice(0, 500);
-        return (
-            note.title.toLowerCase().includes(searchStr) ||
-            safeContent.toLowerCase().includes(searchStr)
-        );
-        });
-    }, [notes, searchQuery]);
-
-    const cleanUrl = (url: string) => {
-    return url.replace(/[),.]+$/, "")
+      if (!response.ok) throw new Error("Save failed");
+      setLastSaved(new Date());
+    } catch {
+      toast.error("Failed to sync note");
+    } finally {
+      setIsSaving(false);
     }
+  }, []);
 
-    const extractUrls = (text: string) => {
-    const matches = text.match(/https?:\/\/[^\s]+/g) || []
-    return [...new Set(matches.map(cleanUrl))]
+  const fetchPreview = useCallback(async (url: string) => {
+    if (requestedPreviews.current.has(url)) return;
+    requestedPreviews.current.add(url);
+
+    try {
+      const response = await fetch("/api/link-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!response.ok) throw new Error("Preview failed");
+      const preview = (await response.json()) as LinkPreview;
+      setLinkPreviews((previous) => ({ ...previous, [url]: preview }));
+    } catch {
+      requestedPreviews.current.delete(url);
     }
+  }, []);
 
-    const fetchPreview = async (url: string) => {
-        if (linkPreviews[url]) return;
+  useEffect(() => {
+    if (initialActiveId) return;
+    const savedNote = localStorage.getItem("activeNote");
+    if (savedNote && initialNotes.some((note) => note.id === savedNote)) {
+      setActiveId(savedNote);
+    }
+  }, [initialActiveId, initialNotes]);
 
-        try {
-        const res = await fetch("/api/link-preview", {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ url }),
-        });
+  useEffect(() => {
+    if (activeId) localStorage.setItem("activeNote", activeId);
+  }, [activeId]);
 
-        const data = await res.json();
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      const target = event.target;
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
 
-        setLinkPreviews((prev) => ({
-            ...prev,
-            [url]: data,
-        }));
-        } catch {}
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+
+      if (event.key === "/" && !isTyping && !event.metaKey && !event.ctrlKey) {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
     };
 
-    function updateField(field: "title" | "content", value: string) {
-        if (!activeNote) return;
-        setNotes((prev) =>
-        prev.map((n) => (n.id === activeNote.id ? { ...n, [field]: value } : n))
-        );
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
+
+  useEffect(() => {
+    const urls = extractUrls(activeNote?.content || "");
+    if (!urls.length) return;
+
+    const timer = window.setTimeout(() => {
+      urls.forEach((url) => void fetchPreview(url));
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [activeNote?.content, fetchPreview]);
+
+  useEffect(() => {
+    if (!activeNote) return;
+
+    if (previousId.current !== activeNote.id) {
+      previousId.current = activeNote.id;
+      return;
     }
 
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => void saveNote(activeNote), 750);
 
-    useEffect(() => {
-        if (!activeNote) return;
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [activeNote, saveNote]);
 
-        const urls = extractUrls(activeNote.content);
-
-        if (urls.length === 0) {
-        setLinkPreviews({});
-        return;
-        }
-
-        const timer = setTimeout(() => {
-        urls.forEach((url) => fetchPreview(url));
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [activeNote?.content]);
-
-    useEffect(() => {
-        if (!activeNote) return;
-        if (previousId.current !== activeNote.id) {
-        previousId.current = activeNote.id;
-        return;
-        }
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-        saveNote();
-        }, 800);
-        return () => {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        };
-    }, [activeNote?.title, activeNote?.content]);
-
-    async function saveNote() {
-        if (!activeNote) return;
-        try {
-        setIsSaving(true);
-        const res = await fetch(`/api/notes/${activeNote.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-            title: activeNote.title,
-            content: activeNote.content,
-            }),
-        });
-        if (!res.ok) throw new Error();
-        setLastSaved(new Date());
-        } catch {
-        toast.error("Failed to sync note");
-        } finally {
-        setIsSaving(false);
-        }
-    }
-
-    async function refreshNotes() {
-        try {
-        setIsRefreshing(true);
-        setIsSaving(true);
-
-        const res = await fetch("/api/notes", {
-            method: "GET",
-        });
-
-        if (!res.ok) throw new Error();
-
-        const freshNotes = await res.json();
-        setNotes(freshNotes);
-
-        toast.success("Vault refreshed");
-        setIsRefreshing(false);
-        } catch {
-        toast.error("Failed to refresh");
-        setIsRefreshing(false);
-        } finally {
-        setIsSaving(false);
-        setIsRefreshing(false);
-        }
-    }
-
-    async function createNote() {
-        try {
-        const res = await fetch("/api/notes", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title: "Untitled", content: "" }),
-        });
-        if (!res.ok) throw new Error();
-        const newNote = await res.json();
-        setNotes((prev) => [newNote, ...prev]);
-        setActiveId(newNote.id);
-        setSearchQuery("");
-        setSidebarOpen(false);
-        toast.success("New sheet added");
-        } catch {
-        toast.error("Failed to create note");
-        }
-    }
-
-    function handleDeleteRequest(id: string, title: string) {
-        setModal({
-        isOpen: true,
-        type: "confirm",
-        title: "Shred Note?",
-        message: `Are you sure you want to permanently delete "${
-            title || "Untitled"
-        }"?`,
-        onConfirm: async () => {
-            try {
-            const res = await fetch(`/api/notes/${id}`, { method: "DELETE" });
-            if (!res.ok) throw new Error();
-            setNotes((prev) => {
-                const updated = prev.filter((n) => n.id !== id);
-                if (activeId === id) setActiveId(updated[0]?.id ?? null);
-                return updated;
-            });
-            toast.success("Note shredded");
-            } catch {
-            toast.error("Delete failed");
-            }
-        },
-        });
-    }
-
-    return (
-        <div className="flex h-screen bg-[#FDFDFD] dark:bg-[#0a0a0a] transition-colors overflow-hidden font-sans relative">
-        <CustomModal
-            {...modal}
-            onClose={() => setModal({ ...modal, isOpen: false })}
-        />
-
-        <aside
-            className={`
-                    absolute md:relative z-30 h-full bg-white dark:bg-[#0a0a0a] transition-all duration-300 ease-in-out
-                    w-full md:w-[320px] lg:w-95 border-r border-neutral-100 dark:border-neutral-800 flex flex-col
-                    ${
-                    sidebarOpen
-                        ? "translate-x-0"
-                        : "-translate-x-full md:translate-x-0"
-                    }
-                `}
-        >
-            <div className="p-6">
-            <button
-                onClick={createNote}
-                className="cursor-pointer w-full group relative flex items-center justify-center gap-2 mb-6 px-4 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl text-sm font-medium hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-neutral-200 dark:shadow-none"
-            >
-                <Plus
-                size={18}
-                className="transition-transform group-hover:rotate-90"
-                />
-                New Sheet
-            </button>
-
-            <div className="relative group">
-                <Search
-                size={16}
-                className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${
-                    searchQuery ? "text-blue-500" : "text-neutral-400"
-                }`}
-                />
-                <input
-                placeholder="Search through vault..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-neutral-200 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 focus:border-neutral-400 dark:focus:border-neutral-600 rounded-xl py-3 pl-11 pr-10 text-[13px] outline-none transition-all placeholder:text-neutral-400"
-                />
-                {searchQuery && (
-                <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400"
-                >
-                    <X size={14} />
-                </button>
-                )}
-            </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-4 space-y-2 pb-10 custom-scrollbar">
-            <AnimatePresence mode="popLayout">
-                {filteredNotes.length > 0 ? (
-                filteredNotes.map((note) => (
-                    <motion.div
-                    layout
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    key={note.id}
-                    onClick={() => {
-                        setActiveId(note.id);
-                        if (window.innerWidth < 768) setSidebarOpen(false);
-                    }}
-                    className={`group relative p-4 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden ${
-                        note.id === activeId
-                        ? "bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600"
-                        : "hover:bg-neutral-200/50 dark:hover:bg-neutral-800/70 border border-transparent"
-                    }`}
-                    >
-                    <div className="flex flex-col gap-1 pr-6">
-                        <h3
-                        className={`text-sm font-medium truncate tracking-tight ${
-                            note.id === activeId
-                            ? "text-neutral-900 dark:text-white"
-                            : "text-neutral-600 dark:text-neutral-400"
-                        }`}
-                        >
-                        {note.title || "Untitled sheet"}
-                        </h3>
-                        <p className="text-[11px] text-neutral-400 leading-relaxed truncate font-light">
-                        {note.content
-                            ? note.content.slice(0, 45)
-                            : "No thoughts yet..."}
-                        </p>
-                    </div>
-                    <button
-                        onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteRequest(note.id, note.title);
-                        }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 md:opacity-0 group-hover:opacity-100 p-2.5 text-neutral-300 hover:text-red-500 rounded-xl transition-all"
-                    >
-                        <Trash2 size={14} />
-                    </button>
-                    </motion.div>
-                ))
-                ) : (
-                <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-                    <Search
-                    size={32}
-                    className="mb-3 text-neutral-600 dark:text-neutral-400"
-                    />
-                    <p className="text-xs font-light italic tracking-wide text-neutral-700 dark:text-neutral-400">
-                    The sheet is empty.
-                    </p>
-                </div>
-                )}
-            </AnimatePresence>
-            </div>
-        </aside>
-
-        <main className="flex-1 flex flex-col relative bg-[#FDFDFD] dark:bg-[#0a0a0a] min-w-0">
-            <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
-            <svg width="100%" height="100%">
-                <pattern
-                id="grid-pattern"
-                width="40"
-                height="40"
-                patternUnits="userSpaceOnUse"
-                >
-                <path
-                    d="M 40 0 L 0 0 0 40"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="0.5"
-                />
-                </pattern>
-                <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-            </svg>
-            </div>
-
-            <header className="relative z-10 px-6 md:px-10 py-5 md:py-7 flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-black/70 backdrop-blur-xl">
-            <div className="flex items-center gap-3">
-                <button
-                onClick={() => setSidebarOpen(true)}
-                className="md:hidden p-2 -ml-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-lg transition-colors"
-                >
-                <ChevronLeft size={20} />
-                </button>
-                <div
-                className={`w-2 h-2 rounded-full ${
-                    isSaving ? "bg-blue-500 animate-pulse" : "bg-green-500"
-                }`}
-                />
-
-                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-neutral-400 select-none">
-                {isSaving
-                    ? "Syncing..."
-                    : lastSaved
-                    ? `Saved • ${lastSaved.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    })}`
-                    : "Draft"}
-                </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-                {Object.keys(linkPreviews).length > 0 && (
-                    <button
-                        onClick={() => setOpenPreviews(!openPreviews)}
-                        className={`cursor-pointer flex items-center gap-1 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
-                        openPreviews
-                            ? "bg-black text-white dark:bg-white dark:text-black"
-                            : "text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-neutral-300"
-                        }`}
-                    >
-                        {openPreviews ? <EyeOff size={14} /> : <Eye size={14} />}
-                        {openPreviews ? "Editor" : "Preview"}
-                    </button>
-                )}
-
-                    <button
-                        onClick={refreshNotes}
-                        className="cursor-pointer flex items-center gap-2 px-1 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-all rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900"
-                        >
-                        <RefreshCcw
-                        size={17}
-                        className={isRefreshing ? "animate-spin" : ""}
-                        />
-                    </button>
-            </div>
-            </header>
-
-            <div className="flex-1 relative z-10 overflow-y-auto w-full custom-scrollbar">
-            <AnimatePresence mode="wait">
-                {activeNote ? (
-                <motion.div
-                    key={activeId + (openPreviews ? "-preview" : "-editor")}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
-                    className="max-w-4xl mx-auto h-full flex flex-col px-8 md:px-16 py-12 md:py-20"
-                >
-                    <input
-                    value={activeNote.title}
-                    onChange={(e) => updateField("title", e.target.value)}
-                    className="text-4xl md:text-7xl font-serif italic tracking-tight w-full mb-12 outline-none bg-transparent placeholder:text-neutral-200 dark:placeholder:text-neutral-800 text-neutral-900 dark:text-white"
-                    placeholder="The Title..."
-                    />
-
-                    {!openPreviews ? (
-                    <textarea
-                        value={activeNote.content}
-                        onChange={(e) => updateField("content", e.target.value)}
-                        className="flex-1 w-full resize-none outline-none bg-transparent text-lg md:text-2xl leading-[1.8] font-light text-neutral-600 dark:text-neutral-400 placeholder:text-neutral-300 dark:placeholder:text-neutral-700 pb-32"
-                        placeholder="Pour your thoughts..."
-                    />
-                    ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-32">
-                        {Object.entries(linkPreviews).map(
-                        ([url, preview], index) => (
-                            <motion.a
-                            key={url}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group flex flex-col bg-white dark:bg-[#111] rounded-lg overflow-hidden border border-neutral-300 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-2xl transition-all duration-500"
-                            >
-                            <div className="aspect-16/10 overflow-hidden relative">
-                                <img
-                                src={preview.image}
-                                alt={preview.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                />
-                                <div className="absolute top-4 left-4">
-                                <div className="bg-black/50 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border border-white/10">
-                                    {url}
-                                </div>
-                                </div>
-                                <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-
-                            <div className="p-7 flex flex-col flex-1">
-                                <div className="flex items-start justify-between gap-4 mb-3">
-                                <h3 className="text-xl font-serif italic leading-tight group-hover:text-blue-500 transition-colors">
-                                    {preview.title}
-                                </h3>
-                                <ExternalLink
-                                    size={14}
-                                    className="text-neutral-300 mt-1"
-                                />
-                                </div>
-
-                                <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-3 leading-relaxed mb-6 flex-1">
-                                {preview.description}
-                                </p>
-                            </div>
-                            </motion.a>
-                        )
-                        )}
-                    </div>
-                    )}
-                </motion.div>
-                ) : (
-                <div className="h-full flex flex-col items-center justify-center gap-8 text-neutral-200 dark:text-neutral-800 p-12">
-                    <div className="w-24 h-24 border-2 border-dashed border-neutral-100 dark:border-neutral-900 rounded-[40px] flex items-center justify-center">
-                    <FileText size={48} strokeWidth={1} />
-                    </div>
-                    <div className="text-center space-y-2">
-                    <h2 className="text-xl font-serif italic text-neutral-400">
-                        Vault Closed
-                    </h2>
-                    <p className="text-sm font-light">
-                        Select a sheet from the archive to begin writing.
-                    </p>
-                    </div>
-                </div>
-                )}
-            </AnimatePresence>
-            </div>
-        </main>
-        </div>
+  function updateField(field: "title" | "content", value: string) {
+    if (!activeNote) return;
+    setNotes((previous) =>
+      previous.map((note) =>
+        note.id === activeNote.id ? { ...note, [field]: value } : note,
+      ),
     );
+  }
+
+  function selectNote(id: string) {
+    setActiveId(id);
+    setOpenPreviews(false);
+    if (window.innerWidth < 768) setSidebarOpen(false);
+  }
+
+  async function refreshNotes() {
+    try {
+      setIsRefreshing(true);
+      const response = await fetch("/api/notes");
+      if (!response.ok) throw new Error("Refresh failed");
+
+      const freshNotes = (await response.json()) as Note[];
+      setNotes(freshNotes);
+      if (activeId && !freshNotes.some((note) => note.id === activeId)) {
+        setActiveId(freshNotes[0]?.id || null);
+      }
+      toast.success("Notes archive refreshed");
+    } catch {
+      toast.error("Failed to refresh notes");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
+
+  async function createNote() {
+    try {
+      const response = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Untitled", content: "" }),
+      });
+      if (!response.ok) throw new Error("Create failed");
+
+      const newNote = (await response.json()) as Note;
+      setNotes((previous) => [newNote, ...previous]);
+      setActiveId(newNote.id);
+      setSearchQuery("");
+      setOpenPreviews(false);
+      if (window.innerWidth < 768) setSidebarOpen(false);
+      toast.success("New note created");
+    } catch {
+      toast.error("Failed to create note");
+    }
+  }
+
+  function handleDeleteRequest(id: string, title: string) {
+    setModal({
+      isOpen: true,
+      type: "confirm",
+      title: "Delete note?",
+      message: `Are you sure you want to permanently delete "${title || "Untitled"}"?`,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`/api/notes/${id}`, { method: "DELETE" });
+          if (!response.ok) throw new Error("Delete failed");
+
+          const updatedNotes = notes.filter((note) => note.id !== id);
+          setNotes(updatedNotes);
+          if (activeId === id) setActiveId(updatedNotes[0]?.id || null);
+          toast.success("Note deleted");
+        } catch {
+          toast.error("Delete failed");
+        }
+      },
+    });
+  }
+
+  return (
+    <div className="relative flex min-h-screen overflow-hidden bg-[#FAFAFA] font-sans text-neutral-900 dark:bg-[#0A0A0A] dark:text-neutral-100">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-48 -top-48 h-96 w-96 rounded-full bg-blue-400/25 blur-[120px] dark:bg-blue-600/10" />
+        <div className="absolute -bottom-52 -right-52 h-[34rem] w-[34rem] rounded-full bg-indigo-400/10 blur-[120px] dark:bg-indigo-600/10" />
+      </div>
+
+      <CustomModal {...modal} onClose={() => setModal((previous) => ({ ...previous, isOpen: false }))} />
+
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.button
+            type="button"
+            aria-label="Close notes archive"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSidebarOpen(false)}
+            className="absolute inset-0 z-20 bg-neutral-950/20 backdrop-blur-[2px] md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <aside
+        className={`absolute inset-y-0 left-0 z-30 flex h-screen w-[min(22rem,88vw)] shrink-0 flex-col border-r border-neutral-200/80 bg-white/85 shadow-2xl shadow-neutral-900/10 backdrop-blur-xl transition-transform duration-300 dark:border-neutral-800/80 dark:bg-[#0D0D0D]/90 dark:shadow-black/40 md:relative md:w-[21rem] md:translate-x-0 md:shadow-none ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+      >
+        <div className="border-b border-neutral-100 p-5 dark:border-neutral-800 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                <FileText size={14} />
+                Notes archive
+              </div>
+              <h1 className="mt-2 font-serif text-2xl tracking-tight text-neutral-800 dark:text-white">
+                Your sheets
+              </h1>
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                {notes.length} note{notes.length === 1 ? "" : "s"} in your archive
+              </p>
+            </div>
+            <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-xl p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-white md:hidden">
+              <X size={17} />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={createNote}
+            className="group mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-85 active:scale-[0.98] dark:bg-white dark:text-black"
+          >
+            <Plus size={17} className="transition-transform duration-300 group-hover:rotate-90" />
+            New note
+          </button>
+
+          <div className="relative mt-3">
+            <Search size={16} className={`pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${searchQuery ? "text-blue-500" : "text-neutral-400"}`} />
+            <input
+              ref={searchInputRef}
+              placeholder="Search your notes…"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              className="w-full rounded-xl border border-neutral-200 bg-neutral-50 py-2.5 pl-10 pr-16 text-sm text-neutral-800 outline-none transition-all placeholder:text-neutral-400 focus:border-blue-500/50 focus:bg-white focus:ring-4 focus:ring-blue-500/10 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:bg-[#111]"
+            />
+            {searchQuery ? (
+              <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-white">
+                <X size={14} />
+              </button>
+            ) : (
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded border border-neutral-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-500">
+                ⌘K
+              </kbd>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between px-5 pb-3 pt-5 sm:px-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+            {searchQuery ? `${filteredNotes.length} matches` : "Recently edited"}
+          </p>
+          <button type="button" aria-label="Refresh notes" title="Refresh notes" onClick={refreshNotes} className="rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-white">
+            <RefreshCcw size={14} className={isRefreshing ? "animate-spin" : ""} />
+          </button>
+        </div>
+
+        <div className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3 pb-6 sm:px-4">
+          <AnimatePresence mode="popLayout">
+            {filteredNotes.length ? (
+              filteredNotes.map((note) => (
+                <motion.div
+                  layout
+                  key={note.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  onClick={() => selectNote(note.id)}
+                  className={`group relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition-all duration-200 ${note.id === activeId ? "border-neutral-300 bg-neutral-100 shadow-sm dark:border-neutral-700 dark:bg-neutral-800" : "border-transparent hover:border-neutral-200 hover:bg-neutral-50 dark:hover:border-neutral-800 dark:hover:bg-neutral-900"}`}
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${note.id === activeId ? "bg-white text-blue-500 shadow-sm dark:bg-neutral-700" : "bg-neutral-100 text-neutral-400 dark:bg-neutral-800"}`}>
+                      <FileText size={15} />
+                    </div>
+                    <div className="min-w-0 flex-1 pr-5">
+                      <h2 className={`truncate text-sm font-semibold ${note.id === activeId ? "text-neutral-900 dark:text-white" : "text-neutral-600 dark:text-neutral-300"}`}>
+                        {note.title || "Untitled note"}
+                      </h2>
+                      <p className="mt-1 truncate text-[11px] leading-relaxed text-neutral-400 dark:text-neutral-500">
+                        {noteExcerpt(note.content)}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Delete ${note.title || "untitled note"}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDeleteRequest(note.id, note.title);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-2 text-neutral-300 opacity-0 transition-all hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100 focus:opacity-100 dark:text-neutral-600 dark:hover:bg-rose-500/10"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </motion.div>
+              ))
+            ) : (
+              <div className="flex flex-col items-center px-6 py-16 text-center">
+                <Search size={24} className="mb-3 text-neutral-300 dark:text-neutral-600" />
+                <p className="font-serif text-lg text-neutral-600 dark:text-neutral-300">
+                  {searchQuery ? "No matching notes" : "Your archive is empty"}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-neutral-400">
+                  {searchQuery ? "Try another word or phrase." : "Create a note to get started."}
+                </p>
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+      </aside>
+
+      <main className="relative z-10 flex min-w-0 flex-1 flex-col">
+        <header className="flex min-h-18 items-center justify-between border-b border-neutral-200/80 bg-white/65 px-4 py-3 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-[#0D0D0D]/65 sm:px-6 md:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <button type="button" aria-label="Open notes archive" onClick={() => setSidebarOpen(true)} className="rounded-xl p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white md:hidden">
+              <Menu size={19} />
+            </button>
+            <div className={`h-2 w-2 shrink-0 rounded-full ${isSaving ? "animate-pulse bg-blue-500" : "bg-emerald-500"}`} />
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                {activeNote?.title || "No note selected"}
+              </p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-400">
+                {isSaving ? "Syncing changes" : timeLabel(lastSaved)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1.5">
+            {activeUrls.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setOpenPreviews((open) => !open)}
+                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${showingPreviews ? "bg-neutral-900 text-white dark:bg-white dark:text-black" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"}`}
+              >
+                {showingPreviews ? <EyeOff size={15} /> : <Eye size={15} />}
+                <span className="hidden sm:inline">{showingPreviews ? "Write" : "Links"}</span>
+                <span className="hidden rounded-md bg-white/15 px-1.5 py-0.5 text-[10px] sm:inline dark:bg-black/10">{activeUrls.length}</span>
+              </button>
+            )}
+            <button type="button" aria-label="Refresh archive" title="Refresh archive" onClick={refreshNotes} className="rounded-xl p-2.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white">
+              <RefreshCcw size={16} className={isRefreshing ? "animate-spin" : ""} />
+            </button>
+          </div>
+        </header>
+
+        <div className="custom-scrollbar relative flex-1 overflow-y-auto">
+          <div className="pointer-events-none absolute inset-0 opacity-[0.035] dark:opacity-[0.045]" style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "25px 25px" }} />
+
+          <AnimatePresence mode="wait">
+            {activeNote ? (
+              <motion.section
+                key={`${activeId}-${showingPreviews ? "links" : "editor"}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className="relative mx-auto flex min-h-full w-full max-w-5xl flex-col px-4 py-5 sm:px-7 md:px-6 md:py-5"
+              >
+                <div className="flex min-h-[calc(100vh-9rem)] flex-1 flex-col rounded-[1.75rem] border border-neutral-200/80 bg-white/70 p-6 shadow-xl shadow-neutral-200/20 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-900/65 dark:shadow-none sm:p-8 md:p-12">
+                  {showingPreviews ? (
+                    <LinkDesk urls={activeUrls} previews={linkPreviews} />
+                  ) : (
+                    <>
+                      <div className="mb-8 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                        <PenLine size={14} />
+                        Writing space
+                      </div>
+                      <input
+                        value={activeNote.title}
+                        onChange={(event) => updateField("title", event.target.value)}
+                        className="w-full bg-transparent font-serif text-4xl tracking-tight text-neutral-900 outline-none placeholder:text-neutral-200 dark:text-white dark:placeholder:text-neutral-800 sm:text-5xl md:text-6xl"
+                        placeholder="Untitled note"
+                      />
+                      <div className="my-7 h-px bg-neutral-200/80 dark:bg-neutral-800" />
+                      <textarea
+                        value={activeNote.content}
+                        onChange={(event) => updateField("content", event.target.value)}
+                        className="min-h-[42vh] flex-1 resize-none bg-transparent text-base leading-8 text-neutral-600 outline-none placeholder:text-neutral-300 dark:text-neutral-300 dark:placeholder:text-neutral-600 sm:text-lg"
+                        placeholder="Start writing your thoughts…"
+                      />
+                      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-5 text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400 dark:border-neutral-800">
+                        <div className="flex items-center gap-4">
+                          <span>{wordCount(activeNote.content)} words</span>
+                          <span>{activeNote.content.length} characters</span>
+                        </div>
+                        <span className="flex items-center gap-1.5">
+                          {isSaving ? <Loader2 size={12} className="animate-spin text-blue-500" /> : <Check size={12} className="text-emerald-500" />}
+                          {isSaving ? "Saving" : "Autosave on"}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </motion.section>
+            ) : (
+              <EmptyEditor onCreate={createNote} onOpenArchive={() => setSidebarOpen(true)} />
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function LinkDesk({ urls, previews }: { urls: string[]; previews: Record<string, LinkPreview> }) {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+        <Link2 size={14} />
+        Linked references
+      </div>
+      <h2 className="mt-3 font-serif text-3xl tracking-tight text-neutral-800 dark:text-white">Your link desk</h2>
+      <p className="mt-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400">Reference cards found in this note. Open any source in a new tab.</p>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        {urls.map((url, index) => {
+          const preview = previews[url];
+          return (
+            <motion.a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-500/30 hover:shadow-lg dark:border-neutral-800 dark:bg-[#111]"
+            >
+              <div className="relative flex aspect-[16/8] items-center justify-center overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                {preview?.image ? (
+                  <img src={preview.image} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                ) : (
+                  <Link2 size={26} className="text-neutral-300 dark:text-neutral-600" />
+                )}
+                <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+              </div>
+              <div className="p-5">
+                <div className="flex items-start gap-3">
+                  <h3 className="min-w-0 flex-1 line-clamp-2 font-serif text-lg leading-snug text-neutral-800 transition-colors group-hover:text-blue-600 dark:text-neutral-100 dark:group-hover:text-blue-400">
+                    {preview?.title || new URL(url).hostname}
+                  </h3>
+                  <ExternalLink size={15} className="mt-1 shrink-0 text-neutral-300 dark:text-neutral-600" />
+                </div>
+                <p className="mt-2 line-clamp-3 text-xs leading-5 text-neutral-500 dark:text-neutral-400">
+                  {preview?.description || url}
+                </p>
+              </div>
+            </motion.a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function EmptyEditor({ onCreate, onOpenArchive }: { onCreate: () => void; onOpenArchive: () => void }) {
+  return (
+    <div className="relative flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center px-6 text-center">
+      <div className="flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-neutral-200 bg-white text-blue-500 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
+        <FileText size={32} />
+      </div>
+      <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Notes archive</p>
+      <h2 className="mt-2 font-serif text-3xl tracking-tight text-neutral-800 dark:text-white">A clear page is waiting.</h2>
+      <p className="mt-3 max-w-sm text-sm leading-6 text-neutral-500 dark:text-neutral-400">Open a note from your archive, or start a fresh thought whenever you&apos;re ready.</p>
+      <div className="mt-7 flex gap-3">
+        <button type="button" onClick={onCreate} className="flex items-center gap-2 rounded-xl bg-neutral-900 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-80 dark:bg-white dark:text-black">
+          <Plus size={16} /> New note
+        </button>
+        <button type="button" onClick={onOpenArchive} className="rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 md:hidden">
+          Open archive
+        </button>
+      </div>
+    </div>
+  );
 }
