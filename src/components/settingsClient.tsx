@@ -344,7 +344,7 @@ function ThemeCard({
     <button
       type="button"
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 ${active ? "border-neutral-900 bg-neutral-900 text-white shadow-lg dark:border-white dark:bg-white dark:text-black" : "border-neutral-200 bg-white/70 text-neutral-700 shadow-sm hover:-translate-y-0.5 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300 dark:hover:border-neutral-700"}`}
+      className={`group cursor-pointer relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 ${active ? "border-neutral-900 bg-neutral-900 text-white shadow-lg dark:border-white dark:bg-white dark:text-black" : "border-neutral-200 bg-white/70 text-neutral-700 shadow-sm hover:-translate-y-0.5 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300 dark:hover:border-neutral-700"}`}
     >
       {active && (
         <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-white/15 dark:bg-black/10">

@@ -354,7 +354,7 @@ export default function NotesEditor({
           <button
             type="button"
             onClick={createNote}
-            className="group mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-85 active:scale-[0.98] dark:bg-white dark:text-black"
+            className="group cursor-pointer mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-85 active:scale-[0.98] dark:bg-white dark:text-black"
           >
             <Plus
               size={17}
@@ -504,7 +504,7 @@ export default function NotesEditor({
               <button
                 type="button"
                 onClick={() => setOpenPreviews((open) => !open)}
-                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${showingPreviews ? "bg-neutral-900 text-white dark:bg-white dark:text-black" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"}`}
+                className={`flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${showingPreviews ? "bg-neutral-900 text-white dark:bg-white dark:text-black" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"}`}
               >
                 {showingPreviews ? <EyeOff size={15} /> : <Eye size={15} />}
                 <span className="hidden sm:inline">
@@ -520,7 +520,7 @@ export default function NotesEditor({
               aria-label="Refresh archive"
               title="Refresh archive"
               onClick={refreshNotes}
-              className="rounded-xl p-2.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+              className="rounded-xl cursor-pointer p-2.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
             >
               <RefreshCcw
                 size={16}

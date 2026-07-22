@@ -127,7 +127,8 @@ export default function PublicVaultPage() {
       ? "All assets"
       : selectedView === "root"
         ? "Main vault"
-        : folders.find((folder) => folder.id === selectedView)?.name || "Folder";
+        : folders.find((folder) => folder.id === selectedView)?.name ||
+          "Folder";
 
   function formatSize(bytes: number) {
     const sizes = ["B", "KB", "MB", "GB"];
@@ -179,13 +180,21 @@ export default function PublicVaultPage() {
           className="flex items-center justify-between gap-4"
         >
           <Link
-            href="/"
-            className="group flex items-center gap-2.5 rounded-xl px-1 py-1 text-neutral-700 transition-colors hover:text-black dark:text-neutral-300 dark:hover:text-white"
+            href="/dashboard"
+            className="group flex items-center gap-3 rounded-2xl px-3 py-2 text-neutral-900 transition-colors hover:bg-neutral-900/5 dark:text-white dark:hover:bg-white/5"
           >
-            <Logo className="h-8 w-8 rotate-10 text-black transition-transform duration-300 group-hover:rotate-0 dark:text-white" />
-            <span className="font-serif text-lg font-bold italic tracking-tight">
-              paperless
-            </span>
+            <div className="relative">
+              <div className="absolute -inset-1 rounded-full bg-blue-500/15 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100" />
+              <Logo className="relative h-8 w-8 rotate-10 text-neutral-900 transition-transform duration-300 group-hover:rotate-0 dark:text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-extrabold uppercase tracking-tighter text-neutral-900 dark:text-white">
+                paperless
+              </p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+                Personal workspace
+              </p>
+            </div>
           </Link>
           <div className="flex items-center gap-2 rounded-full border border-neutral-200/80 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500 shadow-sm backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-900/70 dark:text-neutral-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -223,14 +232,20 @@ export default function PublicVaultPage() {
 
             <div className="flex items-center gap-3 rounded-2xl border border-neutral-200/80 bg-white/70 p-3 pr-4 shadow-sm backdrop-blur-sm dark:border-neutral-800 dark:bg-[#111]/80">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-900 font-serif text-lg text-white shadow-sm dark:bg-white dark:text-black">
-                {ownerName ? ownerName.charAt(0).toUpperCase() : <HardDrive size={18} />}
+                {ownerName ? (
+                  ownerName.charAt(0).toUpperCase()
+                ) : (
+                  <HardDrive size={18} />
+                )}
               </div>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                   Collection
                 </p>
                 <p className="mt-0.5 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                  {loadingVault ? "Loading assets" : `${files.length} file${files.length === 1 ? "" : "s"}`}
+                  {loadingVault
+                    ? "Loading assets"
+                    : `${files.length} file${files.length === 1 ? "" : "s"}`}
                 </p>
               </div>
             </div>
@@ -243,7 +258,10 @@ export default function PublicVaultPage() {
           animate="visible"
           className="mt-6 rounded-[1.75rem] border border-neutral-200/80 bg-white/60 p-4 shadow-sm backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-900/55 sm:p-5"
         >
-          <motion.div variants={itemVariants} className="flex items-center justify-between gap-4 px-2">
+          <motion.div
+            variants={itemVariants}
+            className="flex items-center justify-between gap-4 px-2"
+          >
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
                 Browse vault
@@ -304,7 +322,9 @@ export default function PublicVaultPage() {
                 {activeLabel}
               </p>
               <h2 className="mt-1 font-serif text-2xl tracking-tight text-neutral-800 dark:text-neutral-100">
-                {loadingVault ? "Getting things ready" : `${visibleFileCount} shared item${visibleFileCount === 1 ? "" : "s"}`}
+                {loadingVault
+                  ? "Getting things ready"
+                  : `${visibleFileCount} shared item${visibleFileCount === 1 ? "" : "s"}`}
               </h2>
             </div>
             <div className="mt-5 h-px flex-1 bg-neutral-200/70 dark:bg-neutral-800" />
@@ -321,7 +341,11 @@ export default function PublicVaultPage() {
             </div>
           ) : sections.length === 0 ? (
             <EmptyState
-              title={selectedView === "all" ? "This vault is empty" : "Nothing here yet"}
+              title={
+                selectedView === "all"
+                  ? "This vault is empty"
+                  : "Nothing here yet"
+              }
               message={
                 selectedView === "all"
                   ? "No files have been shared in this collection yet."
@@ -335,6 +359,52 @@ export default function PublicVaultPage() {
               animate="visible"
               className="space-y-9"
             >
+              <style
+                dangerouslySetInnerHTML={{
+                  __html: `
+      .premium-scrollbar{
+        scrollbar-width:thin;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar{
+        width:6px;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-track{
+        background:transparent;
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-thumb{
+        border-radius:999px;
+        border:2px solid transparent;
+        background-clip:padding-box;
+        transition:all .25s ease;
+      }
+
+      /* Light */
+      .premium-scrollbar::-webkit-scrollbar-thumb{
+        background-color:rgba(0,0,0,.14);
+      }
+
+      .premium-scrollbar:hover::-webkit-scrollbar-thumb{
+        background-color:rgba(0,0,0,.28);
+      }
+
+      /* Dark */
+      .dark .premium-scrollbar::-webkit-scrollbar-thumb{
+        background-color:rgba(255,255,255,.12);
+      }
+
+      .dark .premium-scrollbar:hover::-webkit-scrollbar-thumb{
+        background-color:rgba(255,255,255,.25);
+      }
+
+      .premium-scrollbar::-webkit-scrollbar-thumb:active{
+        background-color:rgba(59,130,246,.65);
+      }
+    `,
+                }}
+              />
               {sections.map((section) => (
                 <motion.div key={section.id} variants={itemVariants}>
                   {selectedView === "all" && (
@@ -354,7 +424,7 @@ export default function PublicVaultPage() {
                   )}
 
                   {section.files.length ? (
-                    <div className="space-y-3">
+                    <div className="space-y-3 max-h-70 overflow-y-auto premium-scrollbar">
                       {section.files.map((file) => (
                         <FileRow
                           key={file.id}
@@ -396,7 +466,7 @@ function VaultFilter({
     <button
       type="button"
       onClick={onClick}
-      className={`flex shrink-0 items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-semibold transition-all duration-300 ${
+      className={`flex cursor-pointer shrink-0 items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-semibold transition-all duration-300 ${
         active
           ? "border-neutral-900 bg-neutral-900 text-white shadow-md dark:border-white dark:bg-white dark:text-black"
           : "border-neutral-200 bg-white/80 text-neutral-500 hover:border-neutral-300 hover:text-neutral-900 dark:border-neutral-800 dark:bg-[#111] dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:text-white"
@@ -431,7 +501,6 @@ function FileRow({
       animate={{ opacity: 1, y: 0 }}
       className="group relative overflow-hidden rounded-2xl border border-neutral-200/80 bg-white/70 p-3 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md dark:border-neutral-800/80 dark:bg-neutral-900/65 dark:hover:border-neutral-700"
     >
-      <div className="absolute inset-y-0 left-0 w-1 origin-bottom scale-y-0 bg-blue-500 transition-transform duration-300 group-hover:scale-y-100" />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3.5">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-100 bg-neutral-50 text-neutral-400 transition-colors group-hover:text-blue-500 dark:border-neutral-800 dark:bg-neutral-800/70">
@@ -485,7 +554,7 @@ function FileActionButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-200 ${
+      className={`flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-200 ${
         primary
           ? "bg-neutral-900 text-white shadow-sm hover:opacity-80 dark:bg-white dark:text-black"
           : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
@@ -515,8 +584,12 @@ function EmptyState({
       <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
         <FolderOpen size={19} />
       </div>
-      <h3 className="font-serif text-lg text-neutral-700 dark:text-neutral-300">{title}</h3>
-      <p className="mt-1 text-sm text-neutral-400 dark:text-neutral-500">{message}</p>
+      <h3 className="font-serif text-lg text-neutral-700 dark:text-neutral-300">
+        {title}
+      </h3>
+      <p className="mt-1 text-sm text-neutral-400 dark:text-neutral-500">
+        {message}
+      </p>
     </div>
   );
 }
