@@ -1,20 +1,24 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ArrowRight, X, Moon, Sun, HardDrive, Zap, FileText, Lock, Check, Box } from "lucide-react";
+import {
+  ArrowRight,
+  X,
+  Moon,
+  Sun,
+  HardDrive,
+  Zap,
+  FileText,
+  Lock,
+  Check,
+  Box,
+} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import Logo from "@/lib/logo";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-
-/**
- * Design language: a digitized ledger / card-catalog system.
- * Paper background, ink typography, a stamp-red accent for the one
- * signature moment (the "FILED" stamp), and thin ledger rules standing
- * in for the gradient-blob backgrounds AI-generated pages default to.
- */
 
 const INK = "#1C1912";
 const INK_DARK = "#EDE8DA";
@@ -129,9 +133,8 @@ const Landing: React.FC = () => {
         }
       `}</style>
 
-      <div className="min-h-screen bg-[#F4F1E8] dark:bg-[#14120E] text-[#1C1912] dark:text-[#EDE8DA] relative overflow-hidden transition-colors duration-500">
-        {/* Nav */}
-        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-lg backdrop-blur-xl bg-[#F4F1E8]/70 dark:bg-[#14120E]/70 border border-[#1C1912]/10 dark:border-[#EDE8DA]/10 shadow-[0_8px_32px_rgba(28,25,18,0.06)]">
+      <div className="min-h-screen bg-[#F5F5F3] dark:bg-[#000000] text-[#1C1912] dark:text-[#EDE8DA] relative overflow-hidden transition-colors duration-500">
+        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-lg backdrop-blur-xl bg-[#F8F8F7]/20 dark:bg-[#14120E]/20 border border-[#1C1912]/10 dark:border-[#EDE8DA]/10 shadow-[0_8px_32px_rgba(28,25,18,0.06)]">
           <div
             className="flex items-center gap-1.5 group cursor-pointer"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -149,22 +152,34 @@ const Landing: React.FC = () => {
               href="https://github.com/prodot-com/paperless"
               className="hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors flex items-center gap-1.5 group"
             >
-              Developer <ArrowRight size={10} className="transition-transform group-hover:translate-x-1" />
+              Developer{" "}
+              <ArrowRight
+                size={10}
+                className="transition-transform group-hover:translate-x-1"
+              />
             </Link>
             <Link
               href="https://probalghosh.dev"
               className="hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors flex items-center gap-1.5 group"
             >
-              Company <ArrowRight size={10} className="transition-transform group-hover:translate-x-1" />
+              Company{" "}
+              <ArrowRight
+                size={10}
+                className="transition-transform group-hover:translate-x-1"
+              />
             </Link>
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-md hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-[#6E6656] dark:text-[#9C9484]"
+              className="p-2 rounded-md cursor-po hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-[#6E6656] dark:text-[#9C9484]"
             >
-              {resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              {resolvedTheme === "dark" ? (
+                <Sun size={18} />
+              ) : (
+                <Moon size={18} />
+              )}
             </button>
             <button
               onClick={manageSignin}
@@ -175,50 +190,85 @@ const Landing: React.FC = () => {
           </div>
         </nav>
 
-        {/* Hero */}
         <main className="relative pt-32 pb-16 md:pt-48 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
-          {/* ledger rule texture */}
+          
           <div className="absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,#DDD5BE_32px)] dark:bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,#2A2418_32px)] opacity-40 pointer-events-none" />
-          {/* margin rule */}
+          
           <div className="hidden md:block absolute left-16 top-0 bottom-0 w-px bg-[#9B2226]/20 dark:bg-[#C6483C]/25 pointer-events-none" />
 
-          {/* postmark rings, replacing gradient blobs */}
           <div className="absolute -left-28 -top-28 w-[420px] h-[420px] rounded-full border-[3px] border-[#9B2226]/10 dark:border-[#C6483C]/10 pointer-events-none" />
-          <div className="absolute -right-32 top-32 w-[300px] h-[300px] rounded-full border-[3px] border-[#2B4570]/10 dark:border-[#7DA0C4]/15 pointer-events-none" />
+          <div className="absolute -right-20 top-15 w-[300px] h-[300px] rounded-full border-[3px] border-[#2B4570]/10 dark:border-[#7DA0C4]/15 pointer-events-none" />
 
-          {/* left doodle: paperclip */}
           <motion.div
             initial={{ opacity: 0, x: -20, y: 10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ duration: 2, delay: 0.6 }}
-            className="hidden lg:block absolute -left-4 top-24 w-40 h-48 text-[#1C1912] dark:text-[#EDE8DA] opacity-70 pointer-events-none"
+            className="hidden lg:block absolute -left-4 top-34 rotate-45 w-40 h-48 text-[#1C1912] dark:text-[#EDE8DA] opacity-70 pointer-events-none"
           >
-            <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 200 200"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M75 40 L75 145 Q75 175 105 175 Q135 175 135 145 L135 55 Q135 35 115 35 Q95 35 95 55 L95 130" />
               <path d="M75 40 Q75 25 90 25" />
             </svg>
           </motion.div>
 
-          {/* right doodle: filing tray */}
+          <motion.div
+            initial={{ opacity: 0, x: 20, y: -10 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            transition={{ duration: 3, delay: 0.5 }}
+            className="hidden lg:block absolute -left-1 bottom-40 w-40 h-48 text-black dark:text-white opacity-80 pointer-events-none"
+          >
+            <svg
+              viewBox="0 0 200 200"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M40 100 L100 80 L160 100 L100 120 Z" />
+              <path d="M60 106 V140 Q100 160 140 140 V106" />
+              <path d="M160 100 V130" />
+              <circle cx="160" cy="130" r="4" fill="currentColor" />
+            </svg>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, x: 20, y: -10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ duration: 2, delay: 0.4 }}
             className="hidden lg:block absolute right-0 bottom-48 w-48 h-40 text-[#1C1912] dark:text-[#EDE8DA] opacity-70 pointer-events-none"
           >
-            <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 200 200"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M35 150 H165" />
               <path d="M48 150 L60 105 H140 L152 150" />
               <path d="M78 105 V78 H122 V105" />
             </svg>
           </motion.div>
 
-          {/* stamp — signature element */}
           <motion.div
             initial={{ opacity: 0, scale: 1.6, rotate: -26 }}
             animate={{ opacity: 1, scale: 1, rotate: -9 }}
-            transition={{ type: "spring", stiffness: 180, damping: 13, delay: 0.65 }}
-            className="hidden sm:block absolute right-4 top-28 md:right-16 md:top-16 z-20 select-none pointer-events-none"
+            transition={{
+              type: "spring",
+              stiffness: 180,
+              damping: 13,
+              delay: 0.65,
+            }}
+            className="hidden sm:block absolute right-4 top-28 md:right-16 md:top-34 z-20 select-none pointer-events-none"
           >
             <div className="relative">
               <div className="ink-spread absolute inset-0 rounded-full border-2 border-[#9B2226] dark:border-[#C6483C]" />
@@ -252,7 +302,9 @@ const Landing: React.FC = () => {
           >
             Every note and file,
             <br />
-            <span className="italic font-medium text-[#9B2226] dark:text-[#C6483C]">in one place, for good.</span>
+            <span className="italic font-medium text-[#9B2226] dark:text-[#C6483C]">
+              in one place, for good.
+            </span>
           </motion.h1>
 
           <motion.p
@@ -261,8 +313,9 @@ const Landing: React.FC = () => {
             transition={{ delay: 0.35 }}
             className="text-base sm:text-lg md:text-xl text-[#6E6656] dark:text-[#9C9484] mb-8 max-w-2xl leading-relaxed font-normal px-2 relative z-10"
           >
-            Managing your intellectual property is hard enough. Paperless gives your notes and
-            files a permanent, searchable address — so nothing gets buried in another folder.
+            Managing your intellectual property is hard enough. Paperless gives
+            your notes and files a permanent, searchable address — so nothing
+            gets buried in another folder.
           </motion.p>
 
           <motion.div
@@ -291,12 +344,15 @@ const Landing: React.FC = () => {
             transition={{ delay: 0.6 }}
             className="flex items-center gap-2 text-[11px] font-mono-case uppercase tracking-[0.15em] text-[#6E6656] dark:text-[#9C9484] relative z-10"
           >
-            <Lock size={12} /> Encrypted vault &middot; Google sign-in &middot; No lock-in
+            <Lock size={12} /> Encrypted vault &middot; Google sign-in &middot;
+            No lock-in
           </motion.div>
         </main>
 
-        {/* Features */}
-        <section id="features" className="bg-[#F4F1E8] dark:bg-[#14120E] relative z-10 py-24 md:py-32 px-6 border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10">
+        <section
+          id="features"
+          className="bg-[#f2f0ea] dark:bg-[#14120E] relative z-10 py-24 md:py-32 px-6 border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10"
+        >
           <div className="max-w-7xl mx-auto">
             <div className="mb-16 md:mb-20 text-center md:text-left">
               <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-4">
@@ -306,8 +362,8 @@ const Landing: React.FC = () => {
                 Built like a filing system, not a folder full of clutter.
               </h2>
               <p className="text-[#6E6656] dark:text-[#9C9484] text-lg sm:text-xl max-w-2xl mx-auto md:mx-0 font-normal">
-                Paperless keeps your notes and files structured, searchable, and secure —
-                every entry has a number, and every number has a place.
+                Paperless keeps your notes and files structured, searchable, and
+                secure — every entry has a number, and every number has a place.
               </p>
             </div>
 
@@ -360,7 +416,6 @@ const Landing: React.FC = () => {
           </div>
         </section>
 
-        {/* Pricing */}
         <section
           id="pricing"
           className="relative z-10 py-24 md:py-32 px-6 bg-[#EDE9DB] dark:bg-[#1A170F] border-y-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10"
@@ -379,7 +434,7 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
-              {/* Base */}
+
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -398,20 +453,30 @@ const Landing: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-base text-[#6E6656] dark:text-[#9C9484] mb-8 pb-8 border-b-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 font-medium">
-                  Perfect for individuals organizing essential notes and documents.
+                  Perfect for individuals organizing essential notes and
+                  documents.
                 </p>
 
                 <ul className="space-y-5 mb-10 grow">
-                  {["1GB Vault Storage limit", "2MB maximum file size upload", "Standard Search & Indexing", "Google Authentication"].map(
-                    (item, i) => (
-                      <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold text-[#1C1912] dark:text-[#EDE8DA]">
-                        <div className="p-1 rounded-full bg-[#1C1912]/5 dark:bg-[#EDE8DA]/10 shrink-0">
-                          <Check className="w-4 h-4 text-[#1C1912] dark:text-[#EDE8DA]" strokeWidth={3} />
-                        </div>
-                        {item}
-                      </li>
-                    )
-                  )}
+                  {[
+                    "1GB Vault Storage limit",
+                    "2MB maximum file size upload",
+                    "Standard Search & Indexing",
+                    "Google Authentication",
+                  ].map((item, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center gap-4 text-sm md:text-base font-bold text-[#1C1912] dark:text-[#EDE8DA]"
+                    >
+                      <div className="p-1 rounded-full bg-[#1C1912]/5 dark:bg-[#EDE8DA]/10 shrink-0">
+                        <Check
+                          className="w-4 h-4 text-[#1C1912] dark:text-[#EDE8DA]"
+                          strokeWidth={3}
+                        />
+                      </div>
+                      {item}
+                    </li>
+                  ))}
                 </ul>
                 <button
                   onClick={manageSignin}
@@ -421,7 +486,6 @@ const Landing: React.FC = () => {
                 </button>
               </motion.div>
 
-              {/* Pro */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -436,26 +500,39 @@ const Landing: React.FC = () => {
                 <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-[#F4F1E8]/60 dark:text-[#14120E]/60 mb-2">
                   TIER — 02
                 </p>
-                <h3 className="text-2xl md:text-3xl font-black mb-2 tracking-tight">Pro</h3>
+                <h3 className="text-2xl md:text-3xl font-black mb-2 tracking-tight">
+                  Pro
+                </h3>
                 <div className="mb-6 flex items-baseline gap-2">
-                  <span className="text-4xl md:text-5xl font-black tracking-tight">$8</span>
-                  <span className="text-[#F4F1E8]/70 dark:text-[#14120E]/70 font-bold text-sm md:text-base">/month</span>
+                  <span className="text-4xl md:text-5xl font-black tracking-tight">
+                    $8
+                  </span>
+                  <span className="text-[#F4F1E8]/70 dark:text-[#14120E]/70 font-bold text-sm md:text-base">
+                    /month
+                  </span>
                 </div>
                 <p className="text-base text-[#F4F1E8]/80 dark:text-[#14120E]/80 mb-8 pb-8 border-b-2 border-[#F4F1E8]/20 dark:border-[#14120E]/20 font-medium">
-                  For professionals managing larger files and extended storage needs.
+                  For professionals managing larger files and extended storage
+                  needs.
                 </p>
 
                 <ul className="space-y-5 mb-10 grow">
-                  {["50GB Vault Storage limit", "25MB maximum file size upload", "Advanced Search Capabilities", "Priority email support"].map(
-                    (item, i) => (
-                      <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold">
-                        <div className="p-1 rounded-full bg-[#F4F1E8]/20 dark:bg-[#14120E]/10 shrink-0">
-                          <Check className="w-4 h-4" strokeWidth={3} />
-                        </div>
-                        {item}
-                      </li>
-                    )
-                  )}
+                  {[
+                    "50GB Vault Storage limit",
+                    "25MB maximum file size upload",
+                    "Advanced Search Capabilities",
+                    "Priority email support",
+                  ].map((item, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center gap-4 text-sm md:text-base font-bold"
+                    >
+                      <div className="p-1 rounded-full bg-[#F4F1E8]/20 dark:bg-[#14120E]/10 shrink-0">
+                        <Check className="w-4 h-4" strokeWidth={3} />
+                      </div>
+                      {item}
+                    </li>
+                  ))}
                 </ul>
                 <button
                   onClick={manageSignin}
@@ -465,7 +542,6 @@ const Landing: React.FC = () => {
                 </button>
               </motion.div>
 
-              {/* Enterprise */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -476,7 +552,8 @@ const Landing: React.FC = () => {
                   TIER — 03
                 </p>
                 <h3 className="text-2xl md:text-3xl font-black text-[#1C1912] dark:text-[#EDE8DA] mb-2 tracking-tight flex items-center gap-2">
-                  Enterprise <Box className="w-5 h-5 text-[#9B2226] dark:text-[#C6483C]" />
+                  Enterprise{" "}
+                  <Box className="w-5 h-5 text-[#9B2226] dark:text-[#C6483C]" />
                 </h3>
 
                 <div className="mb-6 flex items-baseline gap-2">
@@ -486,7 +563,8 @@ const Landing: React.FC = () => {
                 </div>
 
                 <p className="text-base text-[#6E6656] dark:text-[#9C9484] mb-8 pb-8 border-b-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 font-medium">
-                  For organizations requiring unlimited storage and dedicated infrastructure.
+                  For organizations requiring unlimited storage and dedicated
+                  infrastructure.
                 </p>
 
                 <ul className="space-y-5 mb-10 grow">
@@ -497,9 +575,15 @@ const Landing: React.FC = () => {
                     "Dedicated Support & SLA",
                     "Custom Integrations",
                   ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-4 text-sm md:text-base font-bold text-[#1C1912] dark:text-[#EDE8DA]">
+                    <li
+                      key={i}
+                      className="flex items-center gap-4 text-sm md:text-base font-bold text-[#1C1912] dark:text-[#EDE8DA]"
+                    >
                       <div className="p-1 rounded-full bg-[#1C1912]/5 dark:bg-[#EDE8DA]/10 shrink-0">
-                        <Check className="w-4 h-4 text-[#1C1912] dark:text-[#EDE8DA]" strokeWidth={3} />
+                        <Check
+                          className="w-4 h-4 text-[#1C1912] dark:text-[#EDE8DA]"
+                          strokeWidth={3}
+                        />
                       </div>
                       {item}
                     </li>
@@ -517,7 +601,6 @@ const Landing: React.FC = () => {
           </div>
         </section>
 
-        {/* FAQ */}
         <section id="faq" className="relative z-10 py-24 md:py-32 px-6">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12 md:mb-16">
@@ -549,7 +632,6 @@ const Landing: React.FC = () => {
           </div>
         </section>
 
-        {/* Footer */}
         <footer className="bg-[#F4F1E8] dark:bg-[#14120E] border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 pt-16 md:pt-20 transition-colors duration-500 relative z-10">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-12 mb-12 text-center md:text-left">
@@ -567,10 +649,19 @@ const Landing: React.FC = () => {
               <div className="flex flex-col items-center md:items-end gap-6 md:gap-8 w-full md:w-auto">
                 <div className="flex flex-wrap justify-center md:justify-end gap-x-8 gap-y-4">
                   {[
-                    { label: "Github", href: "https://github.com/prodot-com/paperless" },
+                    {
+                      label: "Github",
+                      href: "https://github.com/prodot-com/paperless",
+                    },
                     { label: "Contact", href: "https://probalghosh.dev" },
-                    { label: "License", href: "https://github.com/prodot-com/paperless/tree/main?tab=GPL-3.0-1-ov-file#readme" },
-                    { label: "Documentation", href: "https://github.com/prodot-com/paperless/blob/main/README.md" },
+                    {
+                      label: "License",
+                      href: "https://github.com/prodot-com/paperless/tree/main?tab=GPL-3.0-1-ov-file#readme",
+                    },
+                    {
+                      label: "Documentation",
+                      href: "https://github.com/prodot-com/paperless/blob/main/README.md",
+                    },
                   ].map((link) => (
                     <a
                       key={link.label}
@@ -584,7 +675,10 @@ const Landing: React.FC = () => {
                 <div className="text-center md:text-right w-full">
                   <p className="font-mono-case text-[10px] sm:text-xs uppercase tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484] font-bold">
                     Built by{" "}
-                    <a href="https://probalghosh.dev" className="text-[#1C1912] dark:text-[#EDE8DA] hover:underline">
+                    <a
+                      href="https://probalghosh.dev"
+                      className="text-[#1C1912] dark:text-[#EDE8DA] hover:underline"
+                    >
                       Probal Ghosh
                     </a>
                   </p>
@@ -594,14 +688,14 @@ const Landing: React.FC = () => {
 
             <div className="w-full relative text-center select-none overflow-hidden mt-6 md:mt-10">
               <h2 className="font-display text-[16vw] md:text-[14vw] font-bold text-[#1C1912]/10 dark:text-[#EDE8DA]/10 leading-none tracking-tighter transition-colors duration-500">
-                PAPERLESS<span className="text-[#9B2226] dark:text-[#C6483C]">.</span>
+                PAPERLESS
+                <span className="text-[#9B2226] dark:text-[#C6483C]">.</span>
               </h2>
               <div className="absolute bottom-0 w-full h-full bg-linear-to-t from-[#F4F1E8] dark:from-[#14120E] via-transparent to-transparent" />
             </div>
           </div>
         </footer>
 
-        {/* Login modal */}
         <AnimatePresence>
           {loginModal && (
             <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
@@ -638,7 +732,9 @@ const Landing: React.FC = () => {
                   </p>
 
                   <button
-                    onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                    onClick={() =>
+                      signIn("google", { callbackUrl: "/dashboard" })
+                    }
                     className="cursor-pointer w-full flex items-center justify-center gap-3 bg-transparent border-2 border-[#1C1912]/20 dark:border-[#EDE8DA]/20 py-3.5 sm:py-4 rounded-sm font-bold hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-all text-[#1C1912] dark:text-[#EDE8DA] active:scale-95 text-base sm:text-lg"
                   >
                     <GoogleIcon />
@@ -656,10 +752,22 @@ const Landing: React.FC = () => {
 
 const GoogleIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 24 24">
-    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.16H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.84l3.66-2.75z" fill="#FBBC05" />
-    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.16l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+    <path
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      fill="#4285F4"
+    />
+    <path
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      fill="#34A853"
+    />
+    <path
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.16H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.84l3.66-2.75z"
+      fill="#FBBC05"
+    />
+    <path
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.16l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      fill="#EA4335"
+    />
   </svg>
 );
 

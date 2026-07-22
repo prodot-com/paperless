@@ -121,16 +121,23 @@ export default function Dashboard({
   return (
     <div className="flex min-h-screen bg-[#FAFAFA] text-neutral-900 transition-colors duration-300 dark:bg-[#0A0A0A] dark:text-neutral-100">
       <aside className="sticky top-0 z-30 hidden h-screen w-[17.5rem] shrink-0 flex-col border-r border-neutral-200/80 bg-white/80 px-4 py-5 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-[#0D0D0D]/85 md:flex">
-        <Link href="/dashboard" className="group flex items-center gap-3 rounded-2xl px-3 py-2 text-neutral-900 dark:text-white">
-          <div className="relative">
-            <div className="absolute -inset-1 rounded-xl bg-blue-500/15 blur-md opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-            <Logo className="relative h-8 w-8 rotate-10 text-black transition-transform duration-300 group-hover:rotate-0 dark:text-white" />
-          </div>
-          <div>
-            <p className="font-serif text-xl font-bold italic tracking-tight">paperless</p>
-            <p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-neutral-400">Personal workspace</p>
-          </div>
-        </Link>
+      <Link
+        href="/dashboard"
+        className="group flex items-center gap-3 rounded-2xl px-3 py-2 text-neutral-900 transition-colors hover:bg-neutral-900/5 dark:text-white dark:hover:bg-white/5"
+      >
+        <div className="relative">
+          <div className="absolute -inset-1 rounded-full bg-blue-500/15 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100" />
+          <Logo className="relative h-8 w-8 rotate-10 text-neutral-900 transition-transform duration-300 group-hover:rotate-0 dark:text-white" />
+        </div>
+        <div>
+          <p className="text-sm font-extrabold uppercase tracking-tighter text-neutral-900 dark:text-white">
+            paperless
+          </p>
+          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+            Personal workspace
+          </p>
+        </div>
+      </Link>
 
         <Link href="/dashboard/notes" className="group mt-7 flex items-center gap-3 rounded-xl bg-neutral-900 px-3.5 py-3 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-85 dark:bg-white dark:text-black">
           <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/15 dark:bg-black/10">
