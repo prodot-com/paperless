@@ -1,7 +1,8 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 @plugin "tailwindcss-animate";
+
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -13,6 +14,7 @@
 }
 
 @theme inline {
+
   --radius-sm: calc(var(--radius) - 4px);
 
   --radius-md: calc(var(--radius) - 2px);
@@ -91,6 +93,7 @@
 }
 
 :root {
+
   --radius: 0.625rem;
 
   --background: oklch(1 0 0);
@@ -157,6 +160,7 @@
 }
 
 .dark {
+
   --background: oklch(0.145 0 0);
 
   --foreground: oklch(0.985 0 0);
@@ -229,29 +233,34 @@
   }
 }
 
+@keyframes paperlessGlow {
+  0%,100% {
+    box-shadow: 0 0 8px rgba(28,25,18,.15);
+  }
 
-.font-display {
-  font-family: "Fraunces", serif;
-}
-.font-mono-case {
-  font-family: "JetBrains Mono", monospace;
-}
-@keyframes inkSpread {
-  0% {
-    transform: scale(0.4);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
+  50% {
+    box-shadow:
+      0 0 20px rgba(28,25,18,.35),
+      0 0 40px rgba(28,25,18,.15);
   }
 }
-.ink-spread {
-  animation: inkSpread 1.6s ease-out 1s 1 both;
+
+.dark .animate-paperless-glow {
+  animation: paperlessGlowDark 2s ease-in-out infinite;
 }
-@media (prefers-reduced-motion: reduce) {
-  .ink-spread {
-    animation: none;
-    display: none;
+
+@keyframes paperlessGlowDark {
+  0%,100% {
+    box-shadow: 0 0 8px rgba(237,232,218,.15);
   }
+
+  50% {
+    box-shadow:
+      0 0 20px rgba(237,232,218,.45),
+      0 0 40px rgba(237,232,218,.2);
+  }
+}
+
+.animate-paperless-glow {
+  animation: paperlessGlow 2s ease-in-out infinite;
 }

@@ -104,7 +104,7 @@ const Landing: React.FC = () => {
 
   return (
     <div className="min-h-screen font-['Inter'] selection:bg-[#9B2226]/20 dark:selection:bg-[#C6483C]/30 transition-colors duration-500">
-      {/* <style jsx global>{`
+      <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap");
         .font-display {
           font-family: "Fraunces", serif;
@@ -131,7 +131,7 @@ const Landing: React.FC = () => {
             display: none;
           }
         }
-      `}</style> */}
+      `}</style>
 
       <div className="min-h-screen bg-[#F5F5F3] dark:bg-[#000000] text-[#1C1912] dark:text-[#EDE8DA] relative overflow-hidden transition-colors duration-500">
         <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-lg backdrop-blur-xl bg-[#F8F8F7]/20 dark:bg-[#14120E]/20 border border-[#1C1912]/10 dark:border-[#EDE8DA]/10 shadow-[0_8px_32px_rgba(28,25,18,0.06)]">
@@ -173,7 +173,7 @@ const Landing: React.FC = () => {
           <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-md cursor-po hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-[#6E6656] dark:text-[#9C9484]"
+              className="p-2 cursor-pointer rounded-md cursor-po hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-[#6E6656] dark:text-[#9C9484]"
             >
               {resolvedTheme === "dark" ? (
                 <Sun size={18} />
@@ -185,7 +185,7 @@ const Landing: React.FC = () => {
               onClick={manageSignin}
               className="cursor-pointer bg-[#1C1912] dark:bg-[#EDE8DA] text-[#F4F1E8] dark:text-[#14120E] px-4 md:px-6 py-2 md:py-2.5 rounded-sm text-xs font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-[#332E22] dark:hover:bg-white transition-all active:scale-95 shadow-lg shadow-[#1C1912]/10 dark:shadow-black/20"
             >
-              {session ? "Access Vault" : "Join"}
+              {session ? "Enter" : "Join"}
             </button>
           </div>
         </nav>
