@@ -104,7 +104,7 @@ const Landing: React.FC = () => {
 
   return (
     <div className="min-h-screen font-['Inter'] selection:bg-[#9B2226]/20 dark:selection:bg-[#C6483C]/30 transition-colors duration-500">
-      <style jsx global>{`
+      {/* <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap");
         .font-display {
           font-family: "Fraunces", serif;
@@ -131,7 +131,7 @@ const Landing: React.FC = () => {
             display: none;
           }
         }
-      `}</style>
+      `}</style> */}
 
       <div className="min-h-screen bg-[#F5F5F3] dark:bg-[#000000] text-[#1C1912] dark:text-[#EDE8DA] relative overflow-hidden transition-colors duration-500">
         <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-lg backdrop-blur-xl bg-[#F8F8F7]/20 dark:bg-[#14120E]/20 border border-[#1C1912]/10 dark:border-[#EDE8DA]/10 shadow-[0_8px_32px_rgba(28,25,18,0.06)]">
@@ -191,9 +191,8 @@ const Landing: React.FC = () => {
         </nav>
 
         <main className="relative pt-32 pb-16 md:pt-48 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
-          
           <div className="absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,#DDD5BE_32px)] dark:bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,#2A2418_32px)] opacity-40 pointer-events-none" />
-          
+
           <div className="hidden md:block absolute left-16 top-0 bottom-0 w-px bg-[#9B2226]/20 dark:bg-[#C6483C]/25 pointer-events-none" />
 
           <div className="absolute -left-28 -top-28 w-[420px] h-[420px] rounded-full border-[3px] border-[#9B2226]/10 dark:border-[#C6483C]/10 pointer-events-none" />
@@ -240,22 +239,86 @@ const Landing: React.FC = () => {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 20, y: -10 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 2, delay: 0.4 }}
-            className="hidden lg:block absolute right-0 bottom-48 w-48 h-40 text-[#1C1912] dark:text-[#EDE8DA] opacity-70 pointer-events-none"
+            initial={{ opacity: 0, scale: 1.5, rotate: 14 }}
+            animate={{ opacity: 1, scale: 1, rotate: 6 }}
+            transition={{
+              type: "spring",
+              stiffness: 170,
+              damping: 14,
+              delay: 0.85,
+            }}
+            className="hidden lg:block absolute -right-20 bottom-45 w-48 h-40 z-20 select-none pointer-events-none"
           >
             <svg
-              viewBox="0 0 200 200"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              width="98"
+              height="98"
+              viewBox="0 0 92 92"
+              className="text-[#9B2226] dark:text-[#C6483C]"
             >
-              <path d="M35 150 H165" />
-              <path d="M48 150 L60 105 H140 L152 150" />
-              <path d="M78 105 V78 H122 V105" />
+              <circle
+                cx="46"
+                cy="46"
+                r="44"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <circle
+                cx="46"
+                cy="46"
+                r="34"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+              />
+              <path
+                id="postmarkArc"
+                d="M 10 46 A 36 36 0 0 1 82 46"
+                fill="none"
+              />
+              <text
+                fontSize="8"
+                fontWeight="700"
+                letterSpacing="2"
+                fill="currentColor"
+                className="font-mono-case"
+              >
+                <textPath
+                  href="#postmarkArc"
+                  startOffset="50%"
+                  textAnchor="middle"
+                >
+                  RÉSUMÉ ENCLOSED
+                </textPath>
+              </text>
+              <text
+                x="46"
+                y="52"
+                textAnchor="middle"
+                fontSize="9"
+                fontWeight="700"
+                letterSpacing="1"
+                fill="currentColor"
+                className="font-mono-case"
+              >
+                2026
+              </text>
+              <line
+                x1="14"
+                y1="60"
+                x2="78"
+                y2="34"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
+              <line
+                x1="19"
+                y1="67"
+                x2="80"
+                y2="42"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
             </svg>
           </motion.div>
 
@@ -434,7 +497,6 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
-
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
