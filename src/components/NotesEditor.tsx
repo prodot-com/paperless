@@ -299,7 +299,7 @@ export default function NotesEditor({
   }
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden bg-[#FAFAFA] font-sans text-neutral-900 dark:bg-[#0A0A0A] dark:text-neutral-100">
+    <div className="relative flex h-screen overflow-hidden bg-[#FAFAFA] font-sans text-neutral-900 dark:bg-[#0A0A0A] dark:text-neutral-100">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-48 -top-48 h-96 w-96 rounded-full bg-blue-400/25 blur-[120px] dark:bg-blue-600/10" />
         <div className="absolute -bottom-52 -right-52 h-[34rem] w-[34rem] rounded-full bg-indigo-400/10 blur-[120px] dark:bg-indigo-600/10" />
@@ -449,7 +449,7 @@ export default function NotesEditor({
                       event.stopPropagation();
                       handleDeleteRequest(note.id, note.title);
                     }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-2 text-neutral-300 opacity-0 transition-all hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100 focus:opacity-100 dark:text-neutral-600 dark:hover:bg-rose-500/10"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-2 text-neutral-300 opacity-100 md:opacity-0 transition-all hover:bg-rose-50 hover:text-rose-500 md:group-hover:opacity-100 md:focus:opacity-100 dark:text-neutral-600 dark:hover:bg-rose-500/10"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -475,7 +475,7 @@ export default function NotesEditor({
         </div>
       </aside>
 
-      <main className="relative z-10 flex min-w-0 flex-1 flex-col">
+      <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex min-h-18 items-center justify-between border-b border-neutral-200/80 bg-white/65 px-4 py-3 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-[#0D0D0D]/65 sm:px-6 md:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button
@@ -550,12 +550,12 @@ export default function NotesEditor({
                 transition={{ duration: 0.28, ease: "easeOut" }}
                 className="relative mx-auto flex min-h-full w-full max-w-5xl flex-col px-4 py-5 sm:px-7 md:px-6 md:py-5"
               >
-                <div className="flex min-h-[calc(100vh-9rem)] flex-1 flex-col rounded-[1.75rem] border border-neutral-200/80 bg-white/70 p-6 shadow-xl shadow-neutral-200/20 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-900/65 dark:shadow-none sm:p-8 md:p-12">
+                <div className="flex h-full flex-1 flex-col rounded-[1.75rem] border border-neutral-200/80 bg-white/70 p-6 shadow-xl shadow-neutral-200/20 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-900/65 dark:shadow-none sm:p-8 md:p-12">
                   {showingPreviews ? (
                     <LinkDesk urls={activeUrls} previews={linkPreviews} />
                   ) : (
                     <>
-                      <div className="mb-8 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
                         <style
                           dangerouslySetInnerHTML={{
                             __html: `
