@@ -639,7 +639,7 @@ export default function UploadPage() {
                     if (event.dataTransfer.files.length)
                       void handleFiles(Array.from(event.dataTransfer.files));
                   }}
-                  className={`group relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed p-8 text-center transition-all duration-300 sm:p-12 ${isDragging ? "scale-[0.99] border-blue-500 bg-blue-50/50 shadow-xl shadow-blue-500/10 dark:bg-blue-500/10" : "border-neutral-200 bg-white/65 shadow-lg shadow-neutral-200/15 hover:border-neutral-300 hover:bg-white dark:border-neutral-800 dark:bg-neutral-900/60 dark:shadow-none dark:hover:border-neutral-700"}`}
+                  className={`group relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed p-8 text-center transition-all duration-300 sm:p-12 ${isDragging ? "scale-[0.99] border-blue-500 bg-blue-50/50 shadow-xl shadow-blue-500/10 dark:bg-blue-500/10" : "border-neutral-200 bg-white/65 shadow-lg shadow-neutral-200/15 hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-900/60 dark:shadow-none dark:hover:border-neutral-700"}`}
                 >
                   <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl" />
                   <motion.div
