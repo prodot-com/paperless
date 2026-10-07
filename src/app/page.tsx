@@ -20,17 +20,6 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 
-const INK = "#1C1912";
-const INK_DARK = "#EDE8DA";
-const PAPER = "#F4F1E8";
-const PAPER_DARK = "#14120E";
-const GRAPHITE = "#6E6656";
-const GRAPHITE_DARK = "#9C9484";
-const STAMP = "#9B2226";
-const STAMP_DARK = "#C6483C";
-const LEDGER_BLUE = "#2B4570";
-const LEDGER_BLUE_DARK = "#7DA0C4";
-
 interface FAQItemProps {
   index: number;
   question: string;
@@ -40,20 +29,20 @@ interface FAQItemProps {
 const FAQItem: React.FC<FAQItemProps> = ({ index, question, answer }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   return (
-    <div className="border-b-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 py-6">
+    <div className="border-b-2 border-neutral-200/80 dark:border-neutral-800/80 py-6">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between text-left gap-4"
       >
         <span className="flex items-baseline gap-4">
-          <span className="font-mono-case text-xs text-[#9B2226] dark:text-[#C6483C] font-bold tracking-[0.15em] shrink-0">
+          <span className="font-mono-case text-xs text-blue-600 dark:text-blue-400 font-bold tracking-[0.15em] shrink-0">
             Q{String(index).padStart(2, "0")}
           </span>
-          <span className="font-bold text-lg md:text-xl text-[#1C1912] dark:text-[#EDE8DA]">
+          <span className="font-bold text-lg md:text-xl text-neutral-900 dark:text-white">
             {question}
           </span>
         </span>
-        <span className="text-2xl font-light text-[#6E6656] dark:text-[#9C9484] shrink-0">
+        <span className="text-2xl font-light text-neutral-500 dark:text-neutral-400 shrink-0">
           {isOpen ? "\u2212" : "+"}
         </span>
       </button>
@@ -63,7 +52,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ index, question, answer }) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden text-[#6E6656] dark:text-[#9C9484] text-base leading-relaxed mt-4 pl-0 md:pl-12"
+            className="overflow-hidden text-neutral-500 dark:text-neutral-400 text-base leading-relaxed mt-4 pl-0 md:pl-12"
           >
             {answer}
           </motion.div>
@@ -103,7 +92,7 @@ const Landing: React.FC = () => {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen font-['Inter'] selection:bg-[#9B2226]/20 dark:selection:bg-[#C6483C]/30 transition-colors duration-500">
+    <div className="min-h-screen font-['Inter'] selection:bg-blue-500/25 dark:selection:bg-blue-500/30 transition-colors duration-500">
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap");
         .font-display {
@@ -133,24 +122,24 @@ const Landing: React.FC = () => {
         }
       `}</style>
 
-      <div className="min-h-screen bg-[#F5F5F3] dark:bg-[#000000] text-[#1C1912] dark:text-[#EDE8DA] relative overflow-hidden transition-colors duration-500">
-        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-lg backdrop-blur-xl bg-[#F8F8F7]/20 dark:bg-[#14120E]/20 border border-[#1C1912]/10 dark:border-[#EDE8DA]/10 shadow-[0_8px_32px_rgba(28,25,18,0.06)]">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A] text-neutral-900 dark:text-neutral-100 relative overflow-hidden transition-colors duration-500">
+        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[92%] md:w-[90%] max-w-5xl z-50 flex justify-between items-center px-4 md:px-6 py-3 rounded-lg backdrop-blur-xl bg-white/80 dark:bg-[#0D0D0D]/85 border border-neutral-200/80 dark:border-neutral-800/80 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
           <div
             className="flex items-center gap-1.5 group cursor-pointer"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
             <div className="flex items-center justify-center transition-transform group-hover:scale-105">
-              <Logo className="text-[#1C1912] dark:text-[#EDE8DA] w-4 h-4 md:w-6 md:h-6" />
+              <Logo className="text-neutral-900 dark:text-white w-4 h-4 md:w-6 md:h-6" />
             </div>
-            <span className="text-xs md:text-[16px] font-extrabold tracking-tighter uppercase text-[#1C1912] dark:text-[#EDE8DA]">
+            <span className="text-xs md:text-[16px] font-extrabold tracking-tighter uppercase text-neutral-900 dark:text-white">
               paperless
             </span>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-[11px] font-mono-case font-bold uppercase tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484]">
+          <div className="hidden md:flex items-center gap-8 text-[11px] font-mono-case font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
             <Link
               href="https://github.com/prodot-com/paperless"
-              className="hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors flex items-center gap-1.5 group"
+              className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1.5 group"
             >
               Developer{" "}
               <ArrowRight
@@ -160,7 +149,7 @@ const Landing: React.FC = () => {
             </Link>
             <Link
               href="https://probalghosh.dev"
-              className="hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors flex items-center gap-1.5 group"
+              className="hover:text-neutral-900 dark:hover:text-white transition-colors flex items-center gap-1.5 group"
             >
               Company{" "}
               <ArrowRight
@@ -173,7 +162,7 @@ const Landing: React.FC = () => {
           <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={toggleTheme}
-              className="p-2 cursor-pointer rounded-md cursor-po hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-[#6E6656] dark:text-[#9C9484]"
+              className="p-2 cursor-pointer rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-500 dark:text-neutral-400"
             >
               {resolvedTheme === "dark" ? (
                 <Sun size={18} />
@@ -183,7 +172,7 @@ const Landing: React.FC = () => {
             </button>
             <button
               onClick={manageSignin}
-              className="cursor-pointer bg-[#1C1912] dark:bg-[#EDE8DA] text-[#F4F1E8] dark:text-[#14120E] px-4 md:px-6 py-2 md:py-2.5 rounded-sm text-xs font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-[#332E22] dark:hover:bg-white transition-all active:scale-95 shadow-lg shadow-[#1C1912]/10 dark:shadow-black/20"
+              className="cursor-pointer bg-neutral-900 dark:bg-white text-white dark:text-black px-4 md:px-6 py-2 md:py-2.5 rounded-sm text-xs font-mono-case font-bold uppercase tracking-[0.1em] hover:opacity-85 transition-all active:scale-95 shadow-lg shadow-neutral-900/10 dark:shadow-black/20"
             >
               {session ? "Enter" : "Join"}
             </button>
@@ -191,18 +180,18 @@ const Landing: React.FC = () => {
         </nav>
 
         <main className="relative pt-32 pb-16 md:pt-48 md:pb-20 px-6 max-w-5xl mx-auto z-10 flex flex-col items-center text-center">
-          <div className="absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,#DDD5BE_32px)] dark:bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,#2A2418_32px)] opacity-40 pointer-events-none" />
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,rgba(0,0,0,0.06)_32px)] dark:bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_31px,rgba(255,255,255,0.06)_32px)] opacity-40 pointer-events-none" />
 
-          <div className="hidden md:block absolute left-16 top-0 bottom-0 w-px bg-[#9B2226]/20 dark:bg-[#C6483C]/25 pointer-events-none" />
+          <div className="hidden md:block absolute left-16 top-0 bottom-0 w-px bg-blue-500/20 dark:bg-blue-400/25 pointer-events-none" />
 
-          <div className="absolute -left-28 -top-28 w-[420px] h-[420px] rounded-full border-[3px] border-[#9B2226]/10 dark:border-[#C6483C]/10 pointer-events-none" />
-          <div className="absolute -right-20 top-15 w-[300px] h-[300px] rounded-full border-[3px] border-[#2B4570]/10 dark:border-[#7DA0C4]/15 pointer-events-none" />
+          <div className="absolute -left-28 -top-28 w-[420px] h-[420px] rounded-full border-[3px] border-blue-500/10 dark:border-blue-400/10 pointer-events-none" />
+          <div className="absolute -right-20 top-15 w-[300px] h-[300px] rounded-full border-[3px] border-indigo-500/10 dark:border-indigo-400/15 pointer-events-none" />
 
           <motion.div
             initial={{ opacity: 0, x: -20, y: 10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ duration: 2, delay: 0.6 }}
-            className="hidden lg:block absolute -left-4 top-34 rotate-45 w-40 h-48 text-[#1C1912] dark:text-[#EDE8DA] opacity-70 pointer-events-none"
+            className="hidden lg:block absolute -left-4 top-34 rotate-45 w-40 h-48 text-neutral-900 dark:text-neutral-100 opacity-70 pointer-events-none"
           >
             <svg
               viewBox="0 0 200 200"
@@ -221,7 +210,7 @@ const Landing: React.FC = () => {
             initial={{ opacity: 0, x: 20, y: -10 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
             transition={{ duration: 3, delay: 0.5 }}
-            className="hidden lg:block absolute -left-1 bottom-40 w-40 h-48 text-black dark:text-white opacity-80 pointer-events-none"
+            className="hidden lg:block absolute -left-1 bottom-40 w-40 h-48 text-neutral-900 dark:text-white opacity-80 pointer-events-none"
           >
             <svg
               viewBox="0 0 200 200"
@@ -253,7 +242,7 @@ const Landing: React.FC = () => {
               width="98"
               height="98"
               viewBox="0 0 92 92"
-              className="text-[#9B2226] dark:text-[#C6483C]"
+              className="text-blue-500 dark:text-blue-400"
             >
               <circle
                 cx="46"
@@ -334,13 +323,13 @@ const Landing: React.FC = () => {
             className="hidden sm:block absolute right-4 top-28 md:right-16 md:top-34 z-20 select-none pointer-events-none"
           >
             <div className="relative">
-              <div className="ink-spread absolute inset-0 rounded-full border-2 border-[#9B2226] dark:border-[#C6483C]" />
-              <div className="border-[3px] border-[#9B2226] dark:border-[#C6483C] rounded-sm px-1 py-1">
-                <div className="border border-[#9B2226]/70 dark:border-[#C6483C]/70 px-3 py-2 text-center">
-                  <p className="font-mono-case text-[10px] md:text-xs font-bold tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C]">
+              <div className="ink-spread absolute inset-0 rounded-full border-2 border-blue-500 dark:border-blue-400" />
+              <div className="border-[3px] border-blue-500 dark:border-blue-400 rounded-sm px-1 py-1">
+                <div className="border border-blue-500/70 dark:border-blue-400/70 px-3 py-2 text-center">
+                  <p className="font-mono-case text-[10px] md:text-xs font-bold tracking-[0.3em] text-blue-600 dark:text-blue-400">
                     FILED
                   </p>
-                  <p className="font-mono-case text-[8px] md:text-[9px] tracking-[0.2em] mt-0.5 text-[#9B2226]/80 dark:text-[#C6483C]/80">
+                  <p className="font-mono-case text-[8px] md:text-[9px] tracking-[0.2em] mt-0.5 text-blue-600/80 dark:text-blue-400/80">
                     NO. 2026-01
                   </p>
                 </div>
@@ -352,11 +341,11 @@ const Landing: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="font-display text-5xl sm:text-6xl md:text-[76px] font-bold tracking-tight leading-[1.1] text-[#1C1912] dark:text-[#EDE8DA] mb-6 w-full relative z-10"
+            className="font-display text-5xl sm:text-6xl md:text-[76px] font-bold tracking-tight leading-[1.1] text-neutral-900 dark:text-white mb-6 w-full relative z-10"
           >
             Every note and file,
             <br />
-            <span className="italic font-medium text-[#9B2226] dark:text-[#C6483C]">
+            <span className="italic font-medium text-blue-600 dark:text-blue-400">
               in one place, for good.
             </span>
           </motion.h1>
@@ -365,7 +354,7 @@ const Landing: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
-            className="text-base sm:text-lg md:text-xl text-[#6E6656] dark:text-[#9C9484] mb-8 max-w-2xl leading-relaxed font-normal px-2 relative z-10"
+            className="text-base sm:text-lg md:text-xl text-neutral-500 dark:text-neutral-400 mb-8 max-w-2xl leading-relaxed font-normal px-2 relative z-10"
           >
             Managing your intellectual property is hard enough. Paperless gives
             your notes and files a permanent, searchable address — so nothing
@@ -380,13 +369,13 @@ const Landing: React.FC = () => {
           >
             <button
               onClick={manageSignin}
-              className="w-full sm:w-auto cursor-pointer px-8 py-3.5 rounded-sm text-sm font-mono-case font-bold uppercase tracking-[0.1em] text-[#F4F1E8] dark:text-[#14120E] bg-[#1C1912] dark:bg-[#EDE8DA] border-2 border-[#1C1912] dark:border-[#EDE8DA] hover:bg-[#332E22] dark:hover:bg-white transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#1C1912]/10 dark:shadow-black/20"
+              className="w-full sm:w-auto cursor-pointer px-8 py-3.5 rounded-sm text-sm font-mono-case font-bold uppercase tracking-[0.1em] text-white dark:text-black bg-neutral-900 dark:bg-white border-2 border-neutral-900 dark:border-white hover:opacity-85 transition-all flex items-center justify-center gap-2 shadow-xl shadow-neutral-900/10 dark:shadow-black/20"
             >
               Start Filing
             </button>
             <button
               onClick={scrollToPricing}
-              className="w-full sm:w-auto cursor-pointer px-8 py-3.5 rounded-sm text-sm font-mono-case font-bold uppercase tracking-[0.1em] text-[#1C1912] dark:text-[#EDE8DA] bg-transparent border-2 border-[#1C1912] dark:border-[#EDE8DA] hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors flex items-center justify-center gap-2"
+              className="w-full sm:w-auto cursor-pointer px-8 py-3.5 rounded-sm text-sm font-mono-case font-bold uppercase tracking-[0.1em] text-neutral-900 dark:text-white bg-transparent border-2 border-neutral-900 dark:border-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
             >
               View Plans
             </button>
@@ -396,7 +385,7 @@ const Landing: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="flex items-center gap-2 text-[11px] font-mono-case uppercase tracking-[0.15em] text-[#6E6656] dark:text-[#9C9484] relative z-10"
+            className="flex items-center gap-2 text-[11px] font-mono-case uppercase tracking-[0.15em] text-neutral-500 dark:text-neutral-400 relative z-10"
           >
             <Lock size={12} /> Encrypted vault &middot; Google sign-in &middot;
             No lock-in
@@ -405,17 +394,17 @@ const Landing: React.FC = () => {
 
         <section
           id="features"
-          className="bg-[#f2f0ea] dark:bg-[#14120E] relative z-10 py-24 md:py-32 px-6 border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10"
+          className="bg-neutral-50 dark:bg-[#0D0D0D] relative z-10 py-24 md:py-32 px-6 border-t-2 border-neutral-200/80 dark:border-neutral-800/80"
         >
           <div className="max-w-7xl mx-auto">
             <div className="mb-16 md:mb-20 text-center md:text-left">
-              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-4">
+              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400 mb-4">
                 The System
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[#1C1912] dark:text-[#EDE8DA] mb-4 md:mb-6">
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-neutral-900 dark:text-white mb-4 md:mb-6">
                 Built like a filing system, not a folder full of clutter.
               </h2>
-              <p className="text-[#6E6656] dark:text-[#9C9484] text-lg sm:text-xl max-w-2xl mx-auto md:mx-0 font-normal">
+              <p className="text-neutral-500 dark:text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto md:mx-0 font-normal">
                 Paperless keeps your notes and files structured, searchable, and
                 secure — every entry has a number, and every number has a place.
               </p>
@@ -448,20 +437,20 @@ const Landing: React.FC = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ delay: i * 0.1 }}
-                  className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-all group"
+                  className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-neutral-200/80 dark:border-neutral-800/80 hover:border-neutral-900 dark:hover:border-white transition-all group"
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <div className="w-12 h-12 rounded-full border-2 border-[#1C1912] dark:border-[#EDE8DA] flex items-center justify-center text-[#1C1912] dark:text-[#EDE8DA] group-hover:scale-110 transition-transform bg-transparent">
+                    <div className="w-12 h-12 rounded-full border-2 border-neutral-900 dark:border-white flex items-center justify-center text-neutral-900 dark:text-white group-hover:scale-110 transition-transform bg-transparent">
                       {feature.icon}
                     </div>
-                    <span className="font-mono-case text-xs font-bold tracking-[0.2em] text-[#9B2226] dark:text-[#C6483C]">
+                    <span className="font-mono-case text-xs font-bold tracking-[0.2em] text-blue-600 dark:text-blue-400">
                       NO. {feature.no}
                     </span>
                   </div>
-                  <h3 className="text-2xl font-bold mb-3 text-[#1C1912] dark:text-[#EDE8DA] tracking-tight">
+                  <h3 className="text-2xl font-bold mb-3 text-neutral-900 dark:text-white tracking-tight">
                     {feature.title}
                   </h3>
-                  <p className="text-base text-[#6E6656] dark:text-[#9C9484] leading-relaxed font-medium">
+                  <p className="text-base text-neutral-500 dark:text-neutral-400 leading-relaxed font-medium">
                     {feature.desc}
                   </p>
                 </motion.div>
@@ -472,17 +461,17 @@ const Landing: React.FC = () => {
 
         <section
           id="pricing"
-          className="relative z-10 py-24 md:py-32 px-6 bg-[#EDE9DB] dark:bg-[#1A170F] border-y-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10"
+          className="relative z-10 py-24 md:py-32 px-6 bg-neutral-100 dark:bg-[#111111] border-y-2 border-neutral-200/80 dark:border-neutral-800/80"
         >
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16 md:mb-20">
-              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-4">
+              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400 mb-4">
                 Plans — Ledger
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[#1C1912] dark:text-[#EDE8DA] mb-4 md:mb-6">
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-neutral-900 dark:text-white mb-4 md:mb-6">
                 Three ways to file everything.
               </h2>
-              <p className="text-[#6E6656] dark:text-[#9C9484] text-lg sm:text-xl max-w-xl mx-auto font-normal">
+              <p className="text-neutral-500 dark:text-neutral-400 text-lg sm:text-xl max-w-xl mx-auto font-normal">
                 Start free and scale as your digital workspace grows.
               </p>
             </div>
@@ -492,20 +481,20 @@ const Landing: React.FC = () => {
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-[#1C1912]/20 dark:border-[#EDE8DA]/20 hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-colors relative flex flex-col"
+                className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-white transition-colors relative flex flex-col"
               >
-                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484] mb-2">
+                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-neutral-500 dark:text-neutral-400 mb-2">
                   TIER — 01
                 </p>
-                <h3 className="text-2xl md:text-3xl font-black text-[#1C1912] dark:text-[#EDE8DA] mb-2 tracking-tight">
+                <h3 className="text-2xl md:text-3xl font-black text-neutral-900 dark:text-white mb-2 tracking-tight">
                   Base
                 </h3>
                 <div className="mb-6 flex items-baseline gap-2">
-                  <span className="text-4xl md:text-5xl font-black tracking-tight text-[#1C1912] dark:text-[#EDE8DA]">
+                  <span className="text-4xl md:text-5xl font-black tracking-tight text-neutral-900 dark:text-white">
                     Free
                   </span>
                 </div>
-                <p className="text-base text-[#6E6656] dark:text-[#9C9484] mb-8 pb-8 border-b-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 font-medium">
+                <p className="text-base text-neutral-500 dark:text-neutral-400 mb-8 pb-8 border-b-2 border-neutral-200/80 dark:border-neutral-800/80 font-medium">
                   Perfect for individuals organizing essential notes and
                   documents.
                 </p>
@@ -519,11 +508,11 @@ const Landing: React.FC = () => {
                   ].map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-center gap-4 text-sm md:text-base font-bold text-[#1C1912] dark:text-[#EDE8DA]"
+                      className="flex items-center gap-4 text-sm md:text-base font-bold text-neutral-900 dark:text-white"
                     >
-                      <div className="p-1 rounded-full bg-[#1C1912]/5 dark:bg-[#EDE8DA]/10 shrink-0">
+                      <div className="p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 shrink-0">
                         <Check
-                          className="w-4 h-4 text-[#1C1912] dark:text-[#EDE8DA]"
+                          className="w-4 h-4 text-neutral-900 dark:text-white"
                           strokeWidth={3}
                         />
                       </div>
@@ -533,7 +522,7 @@ const Landing: React.FC = () => {
                 </ul>
                 <button
                   onClick={manageSignin}
-                  className="w-full py-4 rounded-sm border-2 border-[#1C1912] dark:border-[#EDE8DA] text-[#1C1912] dark:text-[#EDE8DA] font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-base"
+                  className="w-full py-4 rounded-sm border-2 border-neutral-900 dark:border-white text-neutral-900 dark:text-white font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-base"
                 >
                   Start Filing
                 </button>
@@ -543,9 +532,9 @@ const Landing: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-sm bg-[#1C1912] dark:bg-[#EDE8DA] text-[#F4F1E8] dark:text-[#14120E] border-2 border-[#1C1912] dark:border-[#EDE8DA] relative flex flex-col shadow-2xl"
+                className="p-8 md:p-10 rounded-sm bg-neutral-900 dark:bg-white text-white dark:text-black border-2 border-neutral-900 dark:border-white relative flex flex-col shadow-2xl"
               >
-                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-[#F4F1E8]/60 dark:text-[#14120E]/60 mb-2">
+                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-white/60 dark:text-black/60 mb-2">
                   TIER — 02
                 </p>
                 <h3 className="text-2xl md:text-3xl font-black mb-2 tracking-tight">
@@ -555,11 +544,11 @@ const Landing: React.FC = () => {
                   <span className="text-4xl md:text-5xl font-black tracking-tight">
                     $8
                   </span>
-                  <span className="text-[#F4F1E8]/70 dark:text-[#14120E]/70 font-bold text-sm md:text-base">
+                  <span className="text-white/70 dark:text-black/70 font-bold text-sm md:text-base">
                     /month
                   </span>
                 </div>
-                <p className="text-base text-[#F4F1E8]/80 dark:text-[#14120E]/80 mb-8 pb-8 border-b-2 border-[#F4F1E8]/20 dark:border-[#14120E]/20 font-medium">
+                <p className="text-base text-white/80 dark:text-black/80 mb-8 pb-8 border-b-2 border-white/20 dark:border-black/20 font-medium">
                   For professionals managing larger files and extended storage
                   needs.
                 </p>
@@ -575,7 +564,7 @@ const Landing: React.FC = () => {
                       key={i}
                       className="flex items-center gap-4 text-sm md:text-base font-bold"
                     >
-                      <div className="p-1 rounded-full bg-[#F4F1E8]/20 dark:bg-[#14120E]/10 shrink-0">
+                      <div className="p-1 rounded-full bg-white/20 dark:bg-black/10 shrink-0">
                         <Check className="w-4 h-4" strokeWidth={3} />
                       </div>
                       {item}
@@ -584,7 +573,7 @@ const Landing: React.FC = () => {
                 </ul>
                 <button
                   onClick={manageSignin}
-                  className="w-full py-4 rounded-sm bg-[#F4F1E8] dark:bg-[#14120E] text-[#1C1912] dark:text-[#EDE8DA] font-mono-case font-bold uppercase tracking-[0.1em] hover:scale-[1.02] transition-transform text-base"
+                  className="w-full py-4 rounded-sm bg-white dark:bg-black text-neutral-900 dark:text-white font-mono-case font-bold uppercase tracking-[0.1em] hover:scale-[1.02] transition-transform text-base"
                 >
                   Upgrade to Pro
                 </button>
@@ -594,23 +583,23 @@ const Landing: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-[#1C1912]/20 dark:border-[#EDE8DA]/20 hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-colors relative flex flex-col"
+                className="p-8 md:p-10 rounded-sm bg-transparent border-2 border-neutral-200 dark:border-neutral-800 hover:border-neutral-900 dark:hover:border-white transition-colors relative flex flex-col"
               >
-                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484] mb-2">
+                <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-neutral-500 dark:text-neutral-400 mb-2">
                   TIER — 03
                 </p>
-                <h3 className="text-2xl md:text-3xl font-black text-[#1C1912] dark:text-[#EDE8DA] mb-2 tracking-tight flex items-center gap-2">
+                <h3 className="text-2xl md:text-3xl font-black text-neutral-900 dark:text-white mb-2 tracking-tight flex items-center gap-2">
                   Enterprise{" "}
-                  <Box className="w-5 h-5 text-[#9B2226] dark:text-[#C6483C]" />
+                  <Box className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                 </h3>
 
                 <div className="mb-6 flex items-baseline gap-2">
-                  <span className="text-4xl md:text-5xl font-black tracking-tight text-[#1C1912] dark:text-[#EDE8DA]">
+                  <span className="text-4xl md:text-5xl font-black tracking-tight text-neutral-900 dark:text-white">
                     Custom
                   </span>
                 </div>
 
-                <p className="text-base text-[#6E6656] dark:text-[#9C9484] mb-8 pb-8 border-b-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 font-medium">
+                <p className="text-base text-neutral-500 dark:text-neutral-400 mb-8 pb-8 border-b-2 border-neutral-200/80 dark:border-neutral-800/80 font-medium">
                   For organizations requiring unlimited storage and dedicated
                   infrastructure.
                 </p>
@@ -625,11 +614,11 @@ const Landing: React.FC = () => {
                   ].map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-center gap-4 text-sm md:text-base font-bold text-[#1C1912] dark:text-[#EDE8DA]"
+                      className="flex items-center gap-4 text-sm md:text-base font-bold text-neutral-900 dark:text-white"
                     >
-                      <div className="p-1 rounded-full bg-[#1C1912]/5 dark:bg-[#EDE8DA]/10 shrink-0">
+                      <div className="p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 shrink-0">
                         <Check
-                          className="w-4 h-4 text-[#1C1912] dark:text-[#EDE8DA]"
+                          className="w-4 h-4 text-neutral-900 dark:text-white"
                           strokeWidth={3}
                         />
                       </div>
@@ -640,7 +629,7 @@ const Landing: React.FC = () => {
 
                 <button
                   onClick={manageSignin}
-                  className="w-full py-4 rounded-sm border-2 border-[#1C1912] dark:border-[#EDE8DA] text-[#1C1912] dark:text-[#EDE8DA] font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 transition-colors text-base"
+                  className="w-full py-4 rounded-sm border-2 border-neutral-900 dark:border-white text-neutral-900 dark:text-white font-mono-case font-bold uppercase tracking-[0.1em] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-base"
                 >
                   Contact Sales
                 </button>
@@ -652,15 +641,15 @@ const Landing: React.FC = () => {
         <section id="faq" className="relative z-10 py-24 md:py-32 px-6">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12 md:mb-16">
-              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-4">
+              <p className="font-mono-case text-xs font-bold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400 mb-4">
                 Questions On Record
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[#1C1912] dark:text-[#EDE8DA]">
+              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-white">
                 Frequently Asked Questions
               </h2>
             </div>
 
-            <div className="space-y-2 border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10">
+            <div className="space-y-2 border-t-2 border-neutral-200/80 dark:border-neutral-800/80">
               <FAQItem
                 index={1}
                 question="Is my data secure?"
@@ -680,15 +669,15 @@ const Landing: React.FC = () => {
           </div>
         </section>
 
-        <footer className="bg-[#F4F1E8] dark:bg-[#14120E] border-t-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 pt-16 md:pt-20 transition-colors duration-500 relative z-10">
+        <footer className="bg-[#FAFAFA] dark:bg-[#0A0A0A] border-t-2 border-neutral-200/80 dark:border-neutral-800/80 pt-16 md:pt-20 transition-colors duration-500 relative z-10">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 md:gap-12 mb-12 text-center md:text-left">
               <div className="max-w-sm flex flex-col items-center md:items-start">
                 <div className="flex items-center gap-1 mb-4 md:mb-6 group">
                   <div className="flex items-center justify-center p-2">
-                    <Logo className="text-[#1C1912] dark:text-[#EDE8DA] w-5 h-5 md:w-7 md:h-7" />
+                    <Logo className="text-neutral-900 dark:text-white w-5 h-5 md:w-7 md:h-7" />
                   </div>
-                  <span className="font-black tracking-tight uppercase text-xl md:text-2xl text-[#1C1912] dark:text-[#EDE8DA] leading-none">
+                  <span className="font-black tracking-tight uppercase text-xl md:text-2xl text-neutral-900 dark:text-white leading-none">
                     Paperless
                   </span>
                 </div>
@@ -714,18 +703,18 @@ const Landing: React.FC = () => {
                     <a
                       key={link.label}
                       href={link.href}
-                      className="font-mono-case text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-[#6E6656] dark:text-[#9C9484] hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors"
+                      className="font-mono-case text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
                     >
                       {link.label}
                     </a>
                   ))}
                 </div>
                 <div className="text-center md:text-right w-full">
-                  <p className="font-mono-case text-[10px] sm:text-xs uppercase tracking-[0.2em] text-[#6E6656] dark:text-[#9C9484] font-bold">
+                  <p className="font-mono-case text-[10px] sm:text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400 font-bold">
                     Built by{" "}
                     <a
                       href="https://probalghosh.dev"
-                      className="text-[#1C1912] dark:text-[#EDE8DA] hover:underline"
+                      className="text-neutral-900 dark:text-white hover:underline"
                     >
                       Probal Ghosh
                     </a>
@@ -735,11 +724,11 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="w-full relative text-center select-none overflow-hidden mt-6 md:mt-10">
-              <h2 className="font-display text-[16vw] md:text-[14vw] font-bold text-[#1C1912]/10 dark:text-[#EDE8DA]/10 leading-none tracking-tighter transition-colors duration-500">
+              <h2 className="font-display text-[16vw] md:text-[14vw] font-bold text-neutral-900/10 dark:text-white/10 leading-none tracking-tighter transition-colors duration-500">
                 PAPERLESS
-                <span className="text-[#9B2226] dark:text-[#C6483C]">.</span>
+                <span className="text-blue-500 dark:text-blue-400">.</span>
               </h2>
-              <div className="absolute bottom-0 w-full h-full bg-linear-to-t from-[#F4F1E8] dark:from-[#14120E] via-transparent to-transparent" />
+              <div className="absolute bottom-0 w-full h-full bg-linear-to-t from-[#FAFAFA] dark:from-[#0A0A0A] via-transparent to-transparent" />
             </div>
           </div>
         </footer>
@@ -752,30 +741,30 @@ const Landing: React.FC = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setLoginModal(false)}
-                className="absolute inset-0 bg-[#F4F1E8]/85 dark:bg-[#14120E]/85 backdrop-blur-sm"
+                className="absolute inset-0 bg-white/85 dark:bg-[#0A0A0A]/85 backdrop-blur-sm"
               />
               <motion.div
                 initial={{ scale: 0.95, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                className="relative w-full max-w-md bg-[#F4F1E8] dark:bg-[#1A170F] rounded-sm shadow-2xl p-8 sm:p-10 border-2 border-[#1C1912]/10 dark:border-[#EDE8DA]/10 overflow-hidden"
+                className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-sm shadow-2xl p-8 sm:p-10 border-2 border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden"
               >
                 <button
                   onClick={() => setLoginModal(false)}
-                  className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full hover:bg-[#1C1912]/5 dark:hover:bg-[#EDE8DA]/10 text-[#6E6656] dark:text-[#9C9484] hover:text-[#1C1912] dark:hover:text-[#EDE8DA] transition-colors z-10"
+                  className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors z-10"
                 >
                   <X size={20} strokeWidth={2.5} />
                 </button>
 
                 <div className="text-center relative z-10">
-                  <div className="flex items-center justify-center mx-auto mb-6 sm:mb-8 w-14 h-14 sm:w-16 sm:h-16 rounded-sm border-2 border-[#9B2226] dark:border-[#C6483C] transform -rotate-6">
-                    <Logo className="w-6 h-6 sm:w-8 sm:h-8 text-[#1C1912] dark:text-[#EDE8DA]" />
+                  <div className="flex items-center justify-center mx-auto mb-6 sm:mb-8 w-14 h-14 sm:w-16 sm:h-16 rounded-sm border-2 border-blue-500 dark:border-blue-400 transform -rotate-6">
+                    <Logo className="w-6 h-6 sm:w-8 sm:h-8 text-neutral-900 dark:text-white" />
                   </div>
 
-                  <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight mb-2 text-[#1C1912] dark:text-[#EDE8DA]">
+                  <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight mb-2 text-neutral-900 dark:text-white">
                     Verify Identity
                   </h2>
-                  <p className="text-sm sm:text-base text-[#6E6656] dark:text-[#9C9484] mb-6 sm:mb-8 max-w-xs mx-auto font-medium">
+                  <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 mb-6 sm:mb-8 max-w-xs mx-auto font-medium">
                     Access your digital vault and manage your IP securely.
                   </p>
 
@@ -783,7 +772,7 @@ const Landing: React.FC = () => {
                     onClick={() =>
                       signIn("google", { callbackUrl: "/dashboard" })
                     }
-                    className="cursor-pointer w-full flex items-center justify-center gap-3 bg-transparent border-2 border-[#1C1912]/20 dark:border-[#EDE8DA]/20 py-3.5 sm:py-4 rounded-sm font-bold hover:border-[#1C1912] dark:hover:border-[#EDE8DA] transition-all text-[#1C1912] dark:text-[#EDE8DA] active:scale-95 text-base sm:text-lg"
+                    className="cursor-pointer w-full flex items-center justify-center gap-3 bg-transparent border-2 border-neutral-200 dark:border-neutral-800 py-3.5 sm:py-4 rounded-sm font-bold hover:border-neutral-900 dark:hover:border-white transition-all text-neutral-900 dark:text-white active:scale-95 text-base sm:text-lg"
                   >
                     <GoogleIcon />
                     Continue with Google
