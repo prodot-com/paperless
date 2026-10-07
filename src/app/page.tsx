@@ -348,15 +348,6 @@ const Landing: React.FC = () => {
             </div>
           </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="font-mono-case text-[11px] md:text-xs font-bold uppercase tracking-[0.3em] text-[#9B2226] dark:text-[#C6483C] mb-6 relative z-10"
-          >
-            Digital Vault — Case No. 2026-01
-          </motion.p>
-
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -554,11 +545,6 @@ const Landing: React.FC = () => {
                 viewport={{ once: true }}
                 className="p-8 md:p-10 rounded-sm bg-[#1C1912] dark:bg-[#EDE8DA] text-[#F4F1E8] dark:text-[#14120E] border-2 border-[#1C1912] dark:border-[#EDE8DA] relative flex flex-col shadow-2xl"
               >
-                <div className="absolute -top-3 -right-3 border-2 border-[#9B2226] dark:border-[#C6483C] bg-[#F4F1E8] dark:bg-[#14120E] rounded-sm px-3 py-1 rotate-[-4deg] shadow-lg">
-                  <span className="font-mono-case text-[10px] font-bold uppercase tracking-[0.15em] text-[#9B2226] dark:text-[#C6483C]">
-                    Most Filed
-                  </span>
-                </div>
                 <p className="font-mono-case text-[11px] font-bold tracking-[0.2em] text-[#F4F1E8]/60 dark:text-[#14120E]/60 mb-2">
                   TIER — 02
                 </p>
