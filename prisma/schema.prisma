@@ -8,38 +8,34 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
+  id            String       @id @default(cuid())
+  email         String       @unique
   name          String?
   image         String?
   emailVerified DateTime?
-
-  accounts Account[]
-  sessions Session[]
-
-  notes Note[]
-  files File[]
-  folders Folder[]
-  ShareToken ShareToken[]
-
-  isVaultPublic Boolean @default(false)
+  isVaultPublic Boolean      @default(false)
+  accounts      Account[]
+  files         File[]
+  folders       Folder[]
+  notes         Note[]
+  sessions      Session[]
+  ShareToken    ShareToken[]
 }
 
 model Account {
   id                String  @id @default(cuid())
   userId            String
-  type              String   
   provider          String
   providerAccountId String
   access_token      String?
-  refresh_token     String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
   id_token          String?
+  expires_at        Int?
+  refresh_token     String?
+  scope             String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token_type        String?
+  type              String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -49,8 +45,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -68,8 +63,7 @@ model Note {
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -81,25 +75,23 @@ model File {
   size      Int
   type      String
   userId    String
-  folderId  String?
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  folder Folder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  folderId  String?
+  folder    Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model ShareToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  type      String  
+  id         String    @id @default(cuid())
+  token      String    @unique
+  type       String
   resourceId String
-  expiresAt DateTime?
-  createdAt DateTime @default(now())
-
-  userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
 }
@@ -110,11 +102,9 @@ model Folder {
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  files     File[]
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  files File[]
-
-  @@index([userId])
   @@unique([userId, name])
+  @@index([userId])
 }

@@ -75,6 +75,7 @@ export default function Workspace({
 
   const storagePercent = Math.min((storageUsed / MAX_STORAGE) * 100, 100);
   const firstName = session?.name?.trim().split(" ")[0] || "there";
+  // console.log("Session: ",session)
 
   const handleSearch = () => {
     const query = search.trim();
